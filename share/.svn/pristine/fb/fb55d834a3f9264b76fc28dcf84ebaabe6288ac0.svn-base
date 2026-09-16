@@ -1,0 +1,36 @@
+package com.ecartes.service;
+
+import java.util.List;
+
+import com.ecartes.bean.ItemLocationBean;
+import com.ecartes.model.ItemLocationModel;
+
+public interface ItemLocationService {
+	public void addItemLocation(ItemLocationModel itemLocation);
+
+	public List<ItemLocationModel> getListItemLocationAll();
+
+	public ItemLocationModel getItemLocation(Integer itemLocationId);
+
+	public void deleteItemLocation(Integer itemLocationId);
+
+	public List<ItemLocationModel> getListItemLocation(Integer itemParentLocationId);
+
+	public List<ItemLocationModel> getListItemLocationParent();
+
+	public List<ItemLocationModel> getListItemLocationParent(int itemParentLocationId);
+
+	public ItemLocationModel getLocationByName(ItemLocationBean itemLocationBean);
+
+	public ItemLocationModel getParentLocationByName(String itemLocationName);
+
+	public List<ItemLocationModel> getListItemParent(Integer itemParentLocationId);
+
+	public List<ItemLocationModel> getListBranch(ItemLocationModel model);
+
+	public ItemLocationModel getLocationName(Integer itemLocationId);
+
+	public List<ItemLocationModel> getListItemLocationOnly();
+	
+	public List<ItemLocationModel> getListLocationByFilter(ItemLocationBean itemLocationBean);
+}

@@ -1,0 +1,17 @@
+package com.ecartes.dao;
+import java.util.List;
+
+import com.ecartes.model.RoleMenuModel;
+
+public interface RoleMenuDAO 
+{
+public void addRoleMenu(RoleMenuModel roleMenu);
+public List<RoleMenuModel> getListRoleMenu();
+
+public RoleMenuModel  getRoleMenu(Integer menuID);
+public void deleteRoleMenu(Integer menuID);
+public List<RoleMenuModel> getListRoleMenuType(int menuParentID);
+public void deleteRoleMenuByRoleID(Integer roleID);
+public List<RoleMenuModel>getMenuByUserRole(int roleID);
+}
+

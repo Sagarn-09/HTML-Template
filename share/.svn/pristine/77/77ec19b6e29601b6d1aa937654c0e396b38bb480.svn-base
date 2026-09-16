@@ -1,0 +1,42 @@
+package com.ecartes.common;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+
+
+
+import org.springframework.security.crypto.codec.Base64;
+
+public class DemoImageConvert {
+
+	public static void main(String[] args) {
+		DemoImageConvert converter = new DemoImageConvert();
+		String decryptedBase64Image = converter.getImage("C:/RFID/DecriptImage/sample.jpg");
+		System.out.println("decryptedBase64Image:" + decryptedBase64Image);
+		
+		System.out.println("decryptedBase64Image1:" + decryptedBase64Image.length());
+	}
+
+	public String getImage(String urlPath) {
+		String encodedProductCardfile = null;
+		try {
+
+			String imagePath = urlPath.replace("\\", "/").replace("//", "/");
+
+			Path path = Paths.get(imagePath);
+
+			byte[] imageBytes = Files.readAllBytes(path);
+			//encodedProductCardfile = "data:image/jpeg;base64," + DatatypeConverter.printBase64Binary(imageBytes);
+			
+//			
+			encodedProductCardfile = "data:image/jpeg;base64," +	 new String(Base64.encode(imageBytes), "UTF-8");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return encodedProductCardfile;
+	}
+	
+}

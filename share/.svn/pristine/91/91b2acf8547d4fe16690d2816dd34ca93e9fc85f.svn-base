@@ -1,0 +1,100 @@
+package com.ecartes.model;
+import java.io.Serializable;
+import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+@Entity
+@Table(name="roletype")
+public class RoleTypeModel implements Serializable
+{
+private static final long serialVersionUID = -723583058586873479L;
+@Id
+@GeneratedValue(strategy=GenerationType.AUTO)
+@Column(name = "roleId")
+private Integer roleId=0;
+public Integer getRoleId()
+{
+ return roleId;
+}
+public void  setRoleId(Integer roleId)
+{
+ this.roleId=roleId;
+}
+@Column(name = "roleName")
+private String  roleName=null;
+public String getRoleName()
+{
+ return roleName;
+}
+public void  setRoleName(String roleName)
+{
+ this.roleName=roleName;
+}
+@Column(name = "createdBy")
+private Integer createdBy=0;
+public Integer getCreatedBy()
+{
+ return createdBy;
+}
+public void  setCreatedBy(Integer createdBy)
+{
+ this.createdBy=createdBy;
+}
+
+@Column(name = "roleSequece")
+private Integer roleSequece=0;
+
+public Integer getRoleSequece() {
+	return roleSequece;
+}
+public void setRoleSequece(Integer roleSequece) {
+	this.roleSequece = roleSequece;
+}
+@Temporal(TemporalType.DATE)@Column(name = "createdOn", updatable=true)
+private Date  createdOn=null;
+public Date getCreatedOn()
+{
+ return createdOn;
+}
+public void  setCreatedOn(Date createdOn)
+{
+ this.createdOn=createdOn;
+}
+@Column(name = "modifyBy")
+private Integer modifyBy=0;
+public Integer getModifyBy()
+{
+ return modifyBy;
+}
+public void  setModifyBy(Integer modifyBy)
+{
+ this.modifyBy=modifyBy;
+}
+@Temporal(TemporalType.DATE)@Column(name = "modifyOn", updatable=true)
+private Date  modifyOn=null;
+public Date getModifyOn()
+{
+ return modifyOn;
+}
+public void  setModifyOn(Date modifyOn)
+{
+ this.modifyOn=modifyOn;
+}
+@Column(name = "active")
+private Boolean  active=false;
+public Boolean getActive()
+{
+ return active;
+}
+public void  setActive(Boolean active)
+{
+ this.active=active;
+}
+
+}

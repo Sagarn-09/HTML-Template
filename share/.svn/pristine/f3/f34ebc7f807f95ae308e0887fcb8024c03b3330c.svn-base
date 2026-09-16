@@ -1,0 +1,52 @@
+package com.ecartes.dao;
+
+import java.util.List;
+
+import org.hibernate.Criteria;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.ecartes.model.RoleTypeModel;
+
+@Repository("roleTypeDAO")
+public class RoleTypeDAOImpl implements RoleTypeDAO {
+	@Autowired
+	private SessionFactory sessionFactory;
+
+	@Override
+	public void addRoleType(RoleTypeModel roleType) {
+		sessionFactory.getCurrentSession().saveOrUpdate(roleType);
+	}
+
+	@Override
+	public List<RoleTypeModel> getListRoleType() {
+		return (List<RoleTypeModel>) sessionFactory.getCurrentSession().createCriteria(RoleTypeModel.class).list();
+	}
+
+	@Override
+	public RoleTypeModel getRoleType(Integer roleId) {
+		return (RoleTypeModel) sessionFactory.getCurrentSession().get(RoleTypeModel.class, roleId);
+	}
+
+	@Override
+	public void deleteRoleType(Integer roleId) {
+		sessionFactory.getCurrentSession().createQuery("DELETE FROM roletype WHERE roleId=" + roleId).executeUpdate();
+	}
+
+	@Override
+	public RoleTypeModel getRoleTypeByRoleName(String roleName) {
+
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(RoleTypeModel.class);
+		List<RoleTypeModel> list = null;
+
+		list = criteria.add(Restrictions.eq("roleName", roleName)).list();
+
+		if (list != null && list.size() > 0)
+			return list.get(list.size() - 1);
+
+		return null;
+	}
+
+}

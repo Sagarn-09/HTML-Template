@@ -1,0 +1,153 @@
+package com.ecartes.model;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "login")
+public class LoginModel implements Serializable {
+	private static final long serialVersionUID = -723583058586873479L;
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "loginId")
+	private Integer loginId = null;
+
+	public Integer getLoginId() {
+		return loginId;
+	}
+
+	public void setLoginId(Integer loginId) {
+		this.loginId = loginId;
+	}
+
+	@Column(name = "mobileNo")
+	private String mobileNo = null;
+
+	public String getMobileNo() {
+		return mobileNo;
+	}
+
+	public void setMobileNo(String mobileNo) {
+		this.mobileNo = mobileNo;
+	}
+
+	@Column(name = "userName", length = 50)
+	private String userName = null;
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	@Column(name = "userLoginId", length = 50)
+	private String userLoginId = null;
+
+	public String getUserLoginId() {
+		return userLoginId;
+	}
+
+	public void setUserLoginId(String userLoginId) {
+		this.userLoginId = userLoginId;
+	}
+
+	@Column(name = "password", length = 50)
+	private String password = null;
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	@ManyToOne
+	@JoinColumn(name = "roleId")
+	private RoleTypeModel userRole;
+
+	public RoleTypeModel getUserRole() {
+		return userRole;
+	}
+
+	public void setUserRole(RoleTypeModel userRole) {
+		this.userRole = userRole;
+	}
+
+	@Column(name = "createdBy")
+	private Integer createdBy = 0;
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	@Column(name = "createdOn", nullable = true, updatable = true)
+	private Date createdOn = null;
+
+	public Date getCreatedOn() {
+		return createdOn;
+	}
+
+	public void setCreatedOn(Date createdOn) {
+		this.createdOn = createdOn;
+	}
+
+	@Column(name = "modifyBy")
+	private Integer modifyBy = 0;
+
+	public Integer getModifyBy() {
+		return modifyBy;
+	}
+
+	public void setModifyBy(Integer modifyBy) {
+		this.modifyBy = modifyBy;
+	}
+
+	@Column(name = "modifyOn", nullable = true, updatable = true)
+	private Date modifyOn = null;
+
+	public Date getModifyOn() {
+		return modifyOn;
+	}
+
+	public void setModifyOn(Date modifyOn) {
+		this.modifyOn = modifyOn;
+	}
+
+	@Column(name = "active")
+	private Boolean active = false;
+
+	public Boolean getActive() {
+		return active;
+	}
+
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+	
+	@Column(name = "userType")
+	private String userType=null;
+	public String getUserType() {
+		return userType;
+	}
+	public void setUserType(String userType) {
+		this.userType = userType;
+	}
+
+
+}

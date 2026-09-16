@@ -1,0 +1,43 @@
+package com.ecartes.validator;
+import java.util.regex.Pattern;
+
+import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+import org.springframework.validation.ValidationUtils;
+import org.springframework.validation.Validator;
+
+import com.ecartes.bean.RoleMenuBean;
+
+@Component
+public class RoleMenuValidator implements Validator{
+	
+	   @Override
+	   public boolean supports(Class<?> clazz) {
+	      return RoleMenuBean.class.equals(clazz);
+	   }
+	   
+	   @Override
+	   public void validate(Object obj, Errors err) {
+
+	     ValidationUtils.rejectIfEmpty(err, "menuName", "menu.menuName.empty");
+	      
+	      if(!err.hasErrors())
+	      {
+	    	  RoleMenuBean roleMenuBean = (RoleMenuBean) obj;
+	
+	    	  Pattern pattern = Pattern.compile("[a-zA-Z0-9 [-_////&(),.]]*",
+	    	            Pattern.CASE_INSENSITIVE);
+		      if (!(pattern.matcher(roleMenuBean.getMenuName() ).matches())) {
+		    	  err.rejectValue("menuName", "menuName.filed.length");
+		      }
+		   
+		      if(roleMenuBean.getMenuName()!=null && roleMenuBean.getMenuName().length()>=30)
+			  	{
+			    	err.rejectValue("menuName", "menuName.filed.length");
+			  	}
+		      
+	      }
+	      
+	   }
+
+}

@@ -1,0 +1,119 @@
+package com.ecartes.controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+
+import com.ecartes.bean.LoginBean;
+
+@Component
+public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
+
+	// @Override
+	// public void postHandle(HttpServletRequest request, HttpServletResponse
+	// response, Object handler, ModelAndView modelAndView) throws Exception {
+	//
+	/// *
+	//
+	// response.setHeader("Cache-Control","max-age=31536000, private, no-cache,
+	// no-store, must-revalidate");
+	// response.setHeader("Strict-Transport-Security","max-age=31536000 ;
+	// includeSubDomains");
+	//
+	//
+	// // response.setHeader("X-Frame-Options", "DENY");
+	// response.setHeader("X-Frame-Options", "SAMEORIGIN");
+	// */
+	//// response.setHeader("X-XSS-Protection", "1; mode=block");
+	// /*
+	// //response.setHeader("Content-Security-Policy", "default-src 'self'");
+	// response.setHeader("Content-Security-Policy", "default-src 'self';
+	// form-action 'self'; frame-ancestors 'none';");
+	//
+	// response.setHeader("Content-Type", "text/html; charset=utf-8");
+	//
+	// //response.setHeader("Set-Cookie",
+	// "JSESSIONID="+request.getSession().getId()+";
+	// Path="+request.getContextPath()+"; SameSite=strict; secure; HttpOnly; ");
+	// * */
+	//// for(int i=0;i<request.getCookies().length;i++)
+	//// {
+	//// String name = request.getCookies()[i].getName();
+	//// String value = request.getCookies()[i].getValue();
+	//// System.out.println("name"+name +" value"+value );
+	//// }
+	// response.setHeader("Cache-Control","no-cache, no-store, must-revalidate");
+	// response.setHeader("X-Frame-Options", "SAMEORIGIN");
+	// response.setHeader("Cache-Control","max-age=31536000, private, no-cache,
+	// no-store, must-revalidate");
+	// response.setHeader("Pragma", "no-cache");
+	//
+	// response.setHeader("X-XSS-Protection", "1; mode=block");
+	// response.setHeader("Set-Cookie",
+	// "JSESSIONID="+request.getSession().getId()+"; HttpOnly; SameSite=strict");
+	// response.setHeader("X-Content-Type-Options", "nosniff");
+	// response.setHeader("Content-Type", "text/html; charset=utf-8");
+	// //response.setHeader("X-CSRF-TOKEN", request.getCookies());
+	//
+	//
+	// super.postHandle(request, response, handler, modelAndView);
+	// }
+
+	@Override
+	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+			throws Exception {
+		
+		boolean mobileRequest = false;
+		if (request.getHeader("User-Agent").indexOf("Mobile") != -1
+				|| request.getHeader("User-Agent").contains("Android")
+				|| request.getHeader("User-Agent").contains("Apache-HttpClient")) {
+			mobileRequest = true;
+		}
+
+		boolean ajaxRequest = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+
+		String uri = request.getRequestURI();
+//		System.out.println("uri" + uri);
+
+		request.getSession().setAttribute("mm", request.getParameter("mm"));
+		request.getSession().setAttribute("ms", request.getParameter("ms"));
+		request.getSession().setAttribute("ss", request.getParameter("ss"));
+		request.getSession().setAttribute("uri", uri);
+
+		// **********************withoutLoginUrlHit**************
+
+
+		// ************************withaout login end************
+
+	//	System.out.println("ajaxRequest" + ajaxRequest);
+	//	System.out.println("mobileRequest" + mobileRequest);
+		// ajaxRequest=true;
+		if (ajaxRequest || mobileRequest || uri.contains("rfid") || uri.contains("resource")) {
+
+			return true;
+		} else /*
+				 * if((uri.contains("device")|| uri.contains("Device")) && mobileRequest ) {
+				 * 
+				 * LoginBean userData = (LoginBean)
+				 * request.getSession().getAttribute("LOGGEDIN_USER"); if(userData == null &&
+				 * !uri.contains("devicelogin.do")) { response.sendRedirect("devicelogin.do");
+				 * return false; }
+				 * 
+				 * 
+				 * }else
+				 * 
+				 */
+
+		if (!uri.endsWith("login.do") && !uri.endsWith("logout.do")) {
+
+			LoginBean userData = (LoginBean) request.getSession().getAttribute("LOGGEDIN_USER");
+			if (userData == null) {
+				response.sendRedirect("login.do");
+				return false;
+			}
+		}
+		return true;
+	}
+}

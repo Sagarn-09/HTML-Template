@@ -1,0 +1,100 @@
+package com.ecartes.bean;
+
+public class BulkProcessHH {
+
+	private String processName=null;
+	private Long processTimeLog=null;
+	private String tagList=null;
+	private Integer createdBy=null;
+    private String toStore=null;
+    private Integer scanLocationID=null;
+	public Integer getScanLocationID() {
+		return scanLocationID;
+	}
+	public void setScanLocationID(Integer scanLocationID) {
+		this.scanLocationID = scanLocationID;
+	}
+	public String getToStore() {
+		return toStore;
+	}
+	public void setToStore(String toStore) {
+		this.toStore = toStore;
+	}
+	
+	@Override
+	public String toString() {
+		return "BulkProcessHH [processName=" + processName + ", processTimeLog=" + processTimeLog + ", tagList="
+				+ tagList + ", createdBy=" + createdBy + ", toStore=" + toStore + ", operationStatus=" + operationStatus
+				+ ", remark=" + remark + ", storeName=" + storeName + ", ioStatus=" + ioStatus + ", active=" + active
+				+ ", deviceSerialNo=" + deviceSerialNo + "]";
+	}
+
+	private String operationStatus=null;
+	private String remark=null;
+	private String storeName=null;
+	private String ioStatus=null;
+	
+	public String getOperationStatus() {
+		return operationStatus;
+	}
+	public void setOperationStatus(String operationStatus) {
+		this.operationStatus = operationStatus;
+	}
+	public String getRemark() {
+		return remark;
+	}
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+	public String getStoreName() {
+		return storeName;
+	}
+	public void setStoreName(String storeName) {
+		this.storeName = storeName;
+	}
+	public String getIoStatus() {
+		return ioStatus;
+	}
+	public void setIoStatus(String ioStatus) {
+		this.ioStatus = ioStatus;
+	}
+	
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+	public Boolean getActive() {
+		return active;
+	}
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+	public String getDeviceSerialNo() {
+		return deviceSerialNo;
+	}
+	public void setDeviceSerialNo(String deviceSerialNo) {
+		this.deviceSerialNo = deviceSerialNo;
+	}
+	private Boolean active=false;
+	private String deviceSerialNo=null;
+	public String getProcessName() {
+		return processName;
+	}
+	public void setProcessName(String processName) {
+		this.processName = processName;
+	}
+	public Long getProcessTimeLog() {
+		return processTimeLog;
+	}
+	public void setProcessTimeLog(Long processTimeLog) {
+		this.processTimeLog = processTimeLog;
+	}
+	public String getTagList() {
+		return tagList;
+	}
+	public void setTagList(String tagList) {
+		this.tagList = tagList;
+	}
+}

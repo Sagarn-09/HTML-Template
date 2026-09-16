@@ -1,0 +1,81 @@
+package com.ecartes.dao;
+
+import java.util.List;
+
+import org.hibernate.Criteria;
+import org.hibernate.SQLQuery;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.ecartes.model.TrackingSessionModel;
+
+@Repository("trackingSessionDAO")
+public class TrackingSessionDAOImpl implements TrackingSessionDAO {
+	@Autowired
+	private SessionFactory sessionFactory;
+
+	@Override
+	public void addTrackingSession(TrackingSessionModel trackingSession) {
+		sessionFactory.getCurrentSession().saveOrUpdate(trackingSession);
+	}
+
+	@Override
+	public List<TrackingSessionModel> getListTrackingSession() {
+		return (List<TrackingSessionModel>) sessionFactory.getCurrentSession()
+				.createCriteria(TrackingSessionModel.class).list();
+	}
+
+	@Override
+	public TrackingSessionModel getTrackingSession(Integer trackingSessionId) {
+		return (TrackingSessionModel) sessionFactory.getCurrentSession().get(TrackingSessionModel.class,
+				trackingSessionId);
+	}
+
+	@Override
+	public TrackingSessionModel getTrackingSessionCurrent() {
+		Session session = sessionFactory.getCurrentSession();
+		Criteria criteria = session.createCriteria(TrackingSessionModel.class);
+		criteria.addOrder(Order.desc("startDate"));
+		criteria.addOrder(Order.desc("createdOn"));
+
+		criteria.setMaxResults(1);
+		List<TrackingSessionModel> list = criteria.list();
+		if (list.size() > 0) {
+			return (TrackingSessionModel) list.get(0);
+		}
+		return null;
+	}
+
+	@Override
+	public void deleteTrackingSession(Integer trackingSessionId) {
+		sessionFactory.getCurrentSession()
+				.createQuery("DELETE FROM trackingsession WHERE trackingSessionId=" + trackingSessionId)
+				.executeUpdate();
+	}
+
+	@Override
+	public List<TrackingSessionModel> getCurrentSession(String sessionType) {
+		Session session = sessionFactory.getCurrentSession();
+		SQLQuery query = session.createSQLQuery("select top 1 * from trackingsession where sessionType='" + sessionType
+				+ "' and active=1 order by 1 desc ");
+
+		query.addEntity(TrackingSessionModel.class);
+		return (List<TrackingSessionModel>) query.list();
+	}
+
+	@Override
+	public List<TrackingSessionModel> getTrackingSessionAllActive() {
+		Session session = sessionFactory.getCurrentSession();
+		Criteria criteria = session.createCriteria(TrackingSessionModel.class);
+		criteria.addOrder(Order.desc("startDate"));
+		criteria.addOrder(Order.desc("createdOn"));
+		criteria.add(Restrictions.eq("active", true));
+		return (List<TrackingSessionModel>) criteria.list();
+
+	}
+
+}

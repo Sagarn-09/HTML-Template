@@ -1,0 +1,321 @@
+package com.ecartes.controller;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+
+import com.ecartes.bean.ItemLocationBean;
+import com.ecartes.bean.LoginBean;
+import com.ecartes.bean.RoleMenuBean;
+import com.ecartes.bean.RoleTypeBean;
+import com.ecartes.common.Common;
+import com.ecartes.exceptions.LoginException;
+import com.ecartes.model.LoginModel;
+import com.ecartes.service.ItemLocationService;
+import com.ecartes.service.LoginService;
+import com.ecartes.service.RawMaterialInwardService;
+import com.ecartes.service.RoleMenuService;
+import com.ecartes.service.RoleTypeService;
+import com.ecartes.validator.LoginValidater;
+
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+@Controller
+public class LoginController {
+
+	@Autowired
+	LoginService loginService;
+	@Autowired
+	RoleTypeService roleTypeService;
+	@Autowired
+	RoleMenuService roleMenuService;
+	@Autowired
+	RawMaterialInwardService rawMaterialInwardService;
+	@Autowired
+	LoginValidater loginValidater;
+	@Autowired
+	ItemLocationService itemLocationService;
+
+	@ModelAttribute
+	public void addingCommonObject(Model model, HttpServletRequest request) {
+		model.addAttribute("userRoll", RoleTypeBean.prepareListBean(roleTypeService.getListRoleType()));
+
+		model.addAttribute("itemLocationType",
+				ItemLocationBean.prepareListBean(itemLocationService.getListItemLocation(0)));
+
+	}
+
+	@InitBinder
+	public void InitBinder(WebDataBinder binder) {
+		binder.addValidators(loginValidater);
+
+	}
+
+	@RequestMapping(value = "/addLogin", method = RequestMethod.GET)
+	public ModelAndView addLogin(@ModelAttribute("command") LoginBean loginBean, BindingResult result,
+			HttpServletRequest request) {
+
+		ModelAndView modelAndView = new ModelAndView("pages/login/addlogin");
+		loginBean.setActive(true);
+		modelAndView.addObject("loginBean", loginBean);
+		return modelAndView;
+
+	}
+
+	@RequestMapping(value = "/saveLogin", method = RequestMethod.POST)
+	public ModelAndView saveLogin(@ModelAttribute("command") @Validated LoginBean loginBean, BindingResult result,
+			HttpServletRequest request) throws LoginException {
+		ModelAndView modelAndView = null;
+		if (loginBean == null) {
+			ObjectError objectError = new ObjectError("message", "Please enter data !");
+			result.addError(objectError);
+		} else if (loginBean.getLoginId() == null || loginBean.getLoginId() <= 0) {
+			LoginBean checkLoginBean = LoginBean.prepareBean(loginService.cheIdExitLogin(loginBean.getUserLoginId()));
+
+			if (checkLoginBean != null) {
+				ObjectError objectError = new ObjectError("message", "Email already in use. Please try other!");
+				result.addError(objectError);
+			}
+		}
+
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/login/addlogin");
+			return modelAndView;
+		} else {
+
+			LoginBean loginUser = (LoginBean) request.getSession().getAttribute("LOGGEDIN_USER");
+			modelAndView = new ModelAndView("pages/login/displaylogin");
+			loginBean.setCreatedOn(new Date());
+			loginBean.setModifyOn(new Date());
+			loginBean.setCreatedBy(loginUser.getLoginId());
+			loginBean.setModifyBy(loginUser.getLoginId());
+
+			loginBean.setPassword(Common.getMD5(loginBean.getPassword()));
+			loginService.addLogin(LoginBean.prepareModel(loginBean));
+
+			LoginModel model = LoginBean.prepareModel(loginBean);
+			List<LoginBean> list = new ArrayList<LoginBean>();
+			list.add(LoginBean.prepareBean(loginService.getLogin(model.getLoginId())));
+
+			modelAndView.addObject("loginList", list);
+
+//			modelAndView.addObject("loginList", LoginBean.prepareListBean(loginService.getListLogin(null)));
+			modelAndView.addObject("loginBean", loginBean);
+			return modelAndView;
+		}
+
+	}
+
+	@RequestMapping(value = "/displayLogin", method = RequestMethod.GET)
+	public ModelAndView displayLogin(@ModelAttribute("command") LoginBean loginBean, BindingResult result,
+			HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/login/displaylogin");
+			return modelAndView;
+		} else {
+
+			modelAndView = new ModelAndView("pages/login/displaylogin");
+			modelAndView.addObject("loginList", LoginBean.prepareListBean(loginService.getListLogin(null)));
+			modelAndView.addObject("loginBean", loginBean);
+			return modelAndView;
+		}
+
+	}
+
+	@RequestMapping(value = "/editLogin", method = RequestMethod.GET)
+	public ModelAndView editLogin(@ModelAttribute("command") LoginBean loginBean, BindingResult result,
+			HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/login/addlogin");
+			return modelAndView;
+		} else {
+
+			modelAndView = new ModelAndView("pages/login/addlogin");
+
+			modelAndView.addObject("loginBean", LoginBean.prepareBean(loginService.getLogin(loginBean.getLoginId())));
+
+			return modelAndView;
+		}
+
+	}
+
+	@RequestMapping(value = "/login", method = RequestMethod.GET)
+	public ModelAndView login(@ModelAttribute("command") LoginBean loginBean, BindingResult result,
+			HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+
+		// System.out.println("login page get cll");
+		if (result.hasErrors()) {
+
+			modelAndView = new ModelAndView("pages/login/login");
+			modelAndView.addObject("loginBean", loginBean);
+			return modelAndView;
+		} else {
+			modelAndView = new ModelAndView("pages/login/login");
+//			loginBean.setUserLoginId("kailas@gmail.com");
+//			loginBean.setPassword("Admin@123");
+			// System.out.println( Common.getMD5("Admin@123"));
+			modelAndView.addObject("loginBean", loginBean);
+			return modelAndView;
+		}
+	}
+
+	@RequestMapping(value = "/login", method = RequestMethod.POST)
+	public ModelAndView loginCall(@ModelAttribute("command") @Validated LoginBean loginBean, BindingResult result,
+			HttpServletRequest request) {
+
+		ModelAndView modelAndView = null;
+
+		System.out.println("login page post cll");
+
+		if (result.hasErrors()) {
+			System.out.println("login error");
+			modelAndView = new ModelAndView("pages/login/login");
+			return modelAndView;
+		} else {
+
+			if (loginBean.getPassword() != null) {
+				loginBean.setPassword(Common.getMD5(loginBean.getPassword()));
+			}
+
+			loginBean = LoginBean
+					.prepareBean(loginService.getLogin(loginBean.getUserLoginId(), loginBean.getPassword()));
+
+			if (loginBean != null) {
+				HashMap<String, RoleMenuBean> menuMasteUser = new HashMap<String, RoleMenuBean>();
+				List<RoleMenuBean> listMenuByRole = RoleMenuBean
+						.prepareListBean(roleMenuService.getMenuByUserRole(loginBean.getUserRole().getRoleId()));
+
+				if (listMenuByRole != null) {
+					for (RoleMenuBean bean : listMenuByRole) {
+						if (bean.getActive()) {
+							menuMasteUser.put(bean.getMenuParent().getMenuName(), bean);
+						}
+					}
+				}
+
+				Integer TotalAsset = 0;
+				Integer TotalAssetReg = 0;
+				Integer TotalAssetNotReg = 0;
+				Integer TotalAssetInvetoryFound = 0;
+				Integer TotalAssetInvetoryNotFound = 0;
+
+				 TotalAsset = rawMaterialInwardService.getListMaterial("TotalAsset");
+				 TotalAssetReg = rawMaterialInwardService.getListMaterial("TotalAssetReg");
+				 TotalAssetNotReg = rawMaterialInwardService.getListMaterial("TotalAssetNotReg");
+				 TotalAssetInvetoryFound = rawMaterialInwardService.getListMaterial("TotalAssetInvetoryFound");
+				 TotalAssetInvetoryNotFound = rawMaterialInwardService
+						.getListMaterial("TotalAssetInvetoryNotFound");
+
+				request.getSession().setAttribute("TotalAssetInvetoryNotFound", TotalAssetInvetoryNotFound);
+				request.getSession().setAttribute("TotalAssetInvetoryFound", TotalAssetInvetoryFound);
+				request.getSession().setAttribute("TotalAssetNotReg", TotalAssetNotReg);
+				request.getSession().setAttribute("TotalAsset", TotalAsset);
+				request.getSession().setAttribute("TotalAssetReg", TotalAssetReg);
+				request.getSession().setAttribute("menuMasteUser", menuMasteUser);
+				request.getSession().setAttribute("mm", "Home");
+				request.getSession().setAttribute("LOGGEDIN_USER", loginBean);
+
+				modelAndView = new ModelAndView("pages/login/homepage");
+
+			} else {
+				ObjectError objectError = new ObjectError("message", "Please enter proper user name  and password!");
+				result.addError(objectError);
+				modelAndView = new ModelAndView("pages/login/login");
+				return modelAndView;
+			}
+
+			return modelAndView;
+		}
+
+	}
+
+	@RequestMapping(value = "/homePage", method = { RequestMethod.GET, RequestMethod.POST })
+	public ModelAndView homePage(@ModelAttribute("command") LoginBean loginBean, BindingResult result,
+			HttpServletRequest request) {
+
+		ModelAndView modelAndView = null;
+
+		Integer TotalAsset = 0;
+		Integer TotalAssetReg = 0;
+		Integer TotalAssetNotReg = 0;
+		Integer TotalAssetInvetoryFound = 0;
+		Integer TotalAssetInvetoryNotFound = 0;
+
+		ItemLocationBean itemLocationBean = null;
+
+		if (request.getMethod().equalsIgnoreCase("POST")) {
+
+			/*TotalAsset = rawMaterialInwardService.getListMaterial("TotalAsset", loginBean.getLocationId());
+			TotalAssetReg = rawMaterialInwardService.getListMaterial("TotalAssetReg", loginBean.getLocationId());
+			TotalAssetNotReg = rawMaterialInwardService.getListMaterial("TotalAssetNotReg", loginBean.getLocationId());
+			TotalAssetInvetoryFound = rawMaterialInwardService.getListMaterial("TotalAssetInvetoryFound",
+					loginBean.getLocationId());
+			TotalAssetInvetoryNotFound = rawMaterialInwardService.getListMaterial("TotalAssetInvetoryNotFound",
+					loginBean.getLocationId());
+
+			if (loginBean.getLocationId() != null)
+				itemLocationBean = ItemLocationBean.prepareBean(itemLocationService.getItemLocation(loginBean.getLocationId()));
+			*/
+			 TotalAsset = rawMaterialInwardService.getListMaterial("TotalAsset");
+			 TotalAssetReg = rawMaterialInwardService.getListMaterial("TotalAssetReg");
+			 TotalAssetNotReg = rawMaterialInwardService.getListMaterial("TotalAssetNotReg");
+			 TotalAssetInvetoryFound = rawMaterialInwardService.getListMaterial("TotalAssetInvetoryFound");
+			 TotalAssetInvetoryNotFound = rawMaterialInwardService
+					.getListMaterial("TotalAssetInvetoryNotFound");
+
+
+		}
+
+		request.getSession().setAttribute("TotalAssetInvetoryNotFound", TotalAssetInvetoryNotFound);
+		request.getSession().setAttribute("TotalAssetInvetoryFound", TotalAssetInvetoryFound);
+		request.getSession().setAttribute("TotalAssetNotReg", TotalAssetNotReg);
+		request.getSession().setAttribute("TotalAsset", TotalAsset);
+		request.getSession().setAttribute("TotalAssetReg", TotalAssetReg);
+
+		modelAndView = new ModelAndView("pages/login/homepage");
+		modelAndView.addObject("loginBean", loginBean);
+		if (itemLocationBean != null) {
+			modelAndView.addObject("imagePathUrl", itemLocationBean.getImagePathUrl());
+			modelAndView.addObject("pdfPathUrl", itemLocationBean.getPdfPathUrl());
+			System.out.println("image" + itemLocationBean.getImagePathUrl());
+			System.out.println("pdf" + itemLocationBean.getPdfPathUrl());
+		}
+
+		return modelAndView;
+	}
+
+	@RequestMapping(value = "/logout", method = RequestMethod.GET)
+	public ModelAndView loginout(@ModelAttribute("command") LoginBean loginBean, BindingResult result,
+			HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		modelAndView = new ModelAndView("pages/login/login");
+		request.getSession().setAttribute("LOGGEDIN_USER", null);
+		request.getSession().setAttribute("menuMasteUser", null);
+		return modelAndView;
+	}
+
+	@RequestMapping(value = "/error", method = RequestMethod.GET)
+	public ModelAndView error() {
+		ModelAndView modelAndView = null;
+		modelAndView = new ModelAndView("pages/login/error");
+
+		return modelAndView;
+	}
+
+}

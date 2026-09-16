@@ -1,0 +1,106 @@
+package com.ecartes.validator;
+import java.util.regex.Pattern;
+
+import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+
+import org.springframework.validation.ValidationUtils;
+import org.springframework.validation.Validator;
+
+import com.ecartes.bean.LoginBean;
+
+@Component
+public class LoginValidater implements Validator {
+
+	@Override
+    public boolean supports(Class<?> clazz) {
+		return LoginBean.class.equals(clazz);
+    }
+
+    @Override
+    public void validate(Object obj, Errors err) {
+      	
+	    LoginBean loginBean = (LoginBean) obj;
+
+	    if(loginBean.getMode()!=null && loginBean.getMode().equalsIgnoreCase("Create User"))
+		{	   
+	    	ValidationUtils.rejectIfEmpty(err, "userName", "user.name.empty");
+			ValidationUtils.rejectIfEmpty(err, "userLoginId", "user.email.empty");
+			ValidationUtils.rejectIfEmpty(err, "password", "user.password.empty");
+			ValidationUtils.rejectIfEmpty(err, "mobileNo", "user.mobile.empty");
+			ValidationUtils.rejectIfEmpty(err, "userRole.roleId", "user.role.empty");
+			
+			if(!err.hasErrors())
+			{
+				if(loginBean.getUserLoginId()!=null && loginBean.getUserLoginId().length()>=50)
+			    {
+				    err.rejectValue("userLoginId", "user.email.length");
+			    }
+			    if(loginBean.getUserName()!=null && loginBean.getUserName().length()>=50)
+			    {
+				    err.rejectValue("userName", "user.userName.length");
+			    }
+			    
+			    Pattern pattern = Pattern.compile("^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$") ;
+			    if(!(pattern.matcher(loginBean.getUserLoginId()).matches())) {
+				    err.rejectValue("userLoginId", "user.email.invalid");
+			    }
+			   
+			    String regex = "\\d{10}";
+			    Pattern mobilePattern = Pattern.compile(regex);
+			    if(!(mobilePattern.matcher(loginBean.getMobileNo()).matches()))
+			    {
+				    err.rejectValue("mobileno", "user.mobile.length");
+			    }
+			  
+			    if(loginBean.getPassword()!=null && loginBean.getUserLoginId()!=null || loginBean.getUserName()!=null)
+			    {
+			    	String userLoginId = loginBean.getUserLoginId();
+			    	String str[] = userLoginId.split("@");
+			    	userLoginId = str[0];
+				   
+			    	if(loginBean.getPassword().indexOf(userLoginId) > -1)
+			    	{
+			    		err.rejectValue("password", "user.password.matchEmail");
+			    	}
+			    	if(loginBean.getPassword().indexOf(loginBean.getUserName()) > -1)
+			    	{
+			    		err.rejectValue("password", "user.password.matchUsername");
+			    	}
+			    }
+			  
+			    String regex3 = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&-+=()])(?=\\S+$).{8,20}$";
+			    Pattern passwordPattern = Pattern.compile(regex3);
+			    if(!(passwordPattern.matcher(loginBean.getPassword()).matches()))
+			    {
+			    	err.rejectValue("password", "user.password.match");
+			    }
+			    		    
+			}
+		}else if(loginBean.getMode()!=null && loginBean.getMode().equalsIgnoreCase("User Login"))
+		{
+						
+			ValidationUtils.rejectIfEmpty(err, "userLoginId", "user.email.empty");
+			ValidationUtils.rejectIfEmpty(err, "password", "user.password.empty");
+			
+			if(!err.hasErrors())
+			{
+			    Pattern pattern = Pattern.compile("^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$") ;
+			    if(!(pattern.matcher(loginBean.getUserLoginId()).matches())) {
+
+				    err.rejectValue("userLoginId", "user.email.invalid");
+			    }
+			    if(loginBean.getUserLoginId()!=null && loginBean.getUserLoginId().length()>=50)
+			    {
+				    err.rejectValue("userLoginId", "user.email.length");
+			    }
+			    if(loginBean.getPassword()!=null && (loginBean.getPassword().length()<8 || loginBean.getPassword().length()>20))
+	    		{
+			    	System.out.println("errror ocired");
+			    	err.rejectValue("password", "user.password.length");
+			    	
+	    		}
+			}
+		}
+	}
+}

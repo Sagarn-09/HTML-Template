@@ -1,0 +1,24 @@
+package com.ecartes.bean;
+
+import java.util.Date;
+
+public class FilesBean {
+	private String fileName = null;
+	private Date fileDate = null;
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	public Date getFileDate() {
+		return fileDate;
+	}
+
+	public void setFileDate(Date fileDate) {
+		this.fileDate = fileDate;
+	}
+}

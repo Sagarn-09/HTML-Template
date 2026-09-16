@@ -1,0 +1,271 @@
+package com.ecartes.bean;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
+
+import com.ecartes.common.Common;
+import com.ecartes.model.TrackingSessionModel;
+
+public class TrackingSessionBean implements Serializable {
+	private static final long serialVersionUID = -723583058586873479L;
+	private Integer trackingSessionId = null;;
+
+	@Override
+	public String toString() {
+		return "TrackingSessionBean [trackingSessionId=" + trackingSessionId + ", createdOnUtc=" + createdOnUtc
+				+ ", modifyOnUtc=" + modifyOnUtc + ", trackingSessionName=" + trackingSessionName + ", startDateUtc="
+				+ startDateUtc + ", endDateUtc=" + endDateUtc + ", startDate=" + startDate + ", endDate=" + endDate
+				+ ", sessionType=" + sessionType + ", createdBy=" + createdBy + ", createdOn=" + createdOn
+				+ ", modifyBy=" + modifyBy + ", modifyOn=" + modifyOn + ", active=" + active + ", successFlag="
+				+ successFlag + ", message=" + message + ", callingPage=" + callingPage + ", operation=" + operation
+				+ "]";
+	}
+
+	public Integer getTrackingSessionId() {
+		return trackingSessionId;
+	}
+
+	public void setTrackingSessionId(Integer trackingSessionId) {
+		this.trackingSessionId = trackingSessionId;
+	}
+
+	private String createdOnUtc = null;
+	private String modifyOnUtc = null;
+
+	public String getCreatedOnUtc() {
+		return createdOnUtc;
+	}
+
+	public void setCreatedOnUtc(String createdOnUtc) {
+		this.createdOnUtc = createdOnUtc;
+	}
+
+	public String getModifyOnUtc() {
+		return modifyOnUtc;
+	}
+
+	public void setModifyOnUtc(String modifyOnUtc) {
+		this.modifyOnUtc = modifyOnUtc;
+	}
+
+	private String trackingSessionName = null;
+
+	public String getTrackingSessionName() {
+		return trackingSessionName;
+	}
+
+	public void setTrackingSessionName(String trackingSessionName) {
+		this.trackingSessionName = trackingSessionName;
+	}
+
+	private String startDateUtc = null;
+	private String endDateUtc = null;
+
+	public String getStartDateUtc() {
+		return startDateUtc;
+	}
+
+	public void setStartDateUtc(String startDateUtc) {
+		this.startDateUtc = startDateUtc;
+	}
+
+	public String getEndDateUtc() {
+		return endDateUtc;
+	}
+
+	public void setEndDateUtc(String endDateUtc) {
+		this.endDateUtc = endDateUtc;
+	}
+
+	private Date startDate = null;
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
+	private Date endDate = null;
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
+	private String sessionType = null;
+
+	public String getSessionType() {
+		return sessionType;
+	}
+
+	public void setSessionType(String sessionType) {
+		this.sessionType = sessionType;
+	}
+
+	private Integer createdBy = 0;
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	private Date createdOn = null;
+
+	public Date getCreatedOn() {
+		return createdOn;
+	}
+
+	public void setCreatedOn(Date createdOn) {
+		this.createdOn = createdOn;
+	}
+
+	private Integer modifyBy = 0;
+
+	public Integer getModifyBy() {
+		return modifyBy;
+	}
+
+	public void setModifyBy(Integer modifyBy) {
+		this.modifyBy = modifyBy;
+	}
+
+	private Date modifyOn = null;
+
+	public Date getModifyOn() {
+		return modifyOn;
+	}
+
+	public void setModifyOn(Date modifyOn) {
+		this.modifyOn = modifyOn;
+	}
+
+	private Boolean active = false;
+
+	public Boolean getActive() {
+		return active;
+	}
+
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+
+	private Boolean successFlag = null;
+
+	public Boolean getSuccessFlag() {
+		return successFlag;
+	}
+
+	public void setSuccessFlag(Boolean successFlag) {
+		this.successFlag = successFlag;
+	}
+
+	private String message = null;
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	private String callingPage = null;
+
+	public String getCallingPage() {
+		return callingPage;
+	}
+
+	public void setCallingPage(String callingPage) {
+		this.callingPage = callingPage;
+	}
+
+	private String operation = null;
+
+	public String getOperation() {
+		return operation;
+	}
+
+	public void setOperation(String operation) {
+		this.operation = operation;
+	}
+
+	public static TrackingSessionModel prepareModel(TrackingSessionBean bean) {
+		TrackingSessionModel model = new TrackingSessionModel();
+		model.setTrackingSessionId(bean.getTrackingSessionId());
+		model.setTrackingSessionName(bean.getTrackingSessionName());
+		model.setStartDate(bean.getStartDate());
+		model.setEndDate(bean.getEndDate());
+		model.setSessionType(bean.getSessionType());
+		model.setCreatedBy(bean.getCreatedBy());
+		model.setCreatedOn(bean.getCreatedOn());
+		model.setModifyBy(bean.getModifyBy());
+		model.setModifyOn(bean.getModifyOn());
+		model.setActive(bean.getActive());
+		if (bean.getCreatedOnUtc() != null)
+			model.setCreatedOn(Common.getDateFromUtcFormat(bean.getCreatedOnUtc()));
+		if (bean.getModifyOnUtc() != null)
+			model.setModifyOn(Common.getDateFromUtcFormat(bean.getModifyOnUtc()));
+
+		if (bean.getStartDateUtc() != null)
+			model.setStartDate(Common.getDateFromUtcFormat(bean.getStartDateUtc()));
+		if (bean.getEndDateUtc() != null)
+			model.setEndDate(Common.getDateFromUtcFormat(bean.getEndDateUtc()));
+		return model;
+	}
+
+	public static TrackingSessionBean prepareBean(TrackingSessionModel model) {
+		TrackingSessionBean bean = new TrackingSessionBean();
+		bean.setTrackingSessionId(model.getTrackingSessionId());
+		bean.setTrackingSessionName(model.getTrackingSessionName());
+		bean.setStartDate(model.getStartDate());
+		bean.setEndDate(model.getEndDate());
+		bean.setSessionType(model.getSessionType());
+		bean.setCreatedBy(model.getCreatedBy());
+		bean.setCreatedOn(model.getCreatedOn());
+		bean.setModifyBy(model.getModifyBy());
+		bean.setModifyOn(model.getModifyOn());
+		bean.setActive(model.getActive());
+		if (model.getCreatedOn() != null)
+			bean.setCreatedOnUtc(Common.getUtcFormat(model.getCreatedOn()));
+		if (model.getModifyOn() != null)
+			bean.setModifyOnUtc(Common.getUtcFormat(model.getModifyOn()));
+
+		if (model.getStartDate() != null)
+			bean.setStartDateUtc(Common.getUtcFormat(model.getStartDate()));
+		if (model.getEndDate() != null)
+			bean.setEndDateUtc(Common.getUtcFormat(model.getEndDate()));
+		return bean;
+	}
+
+	public static List<TrackingSessionBean> prepareListBean(List<TrackingSessionModel> listModel) {
+		List<TrackingSessionBean> beans = null;
+		if (listModel != null && !listModel.isEmpty()) {
+			beans = new ArrayList<TrackingSessionBean>();
+			for (TrackingSessionModel model : listModel) {
+				beans.add(prepareBean(model));
+			}
+		}
+		return beans;
+	}
+
+	public static List<TrackingSessionModel> prepareListModel(List<TrackingSessionBean> beans) {
+		List<TrackingSessionModel> listModel = null;
+		if (beans != null && !beans.isEmpty()) {
+			listModel = new ArrayList<TrackingSessionModel>();
+			for (TrackingSessionBean bean : beans) {
+				listModel.add(prepareModel(bean));
+			}
+		}
+		return listModel;
+	}
+}
