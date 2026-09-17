@@ -1,0 +1,652 @@
+package com.ecartes.excel;
+
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.StringTokenizer;
+
+import com.ecartes.bean.ProcessTrackingFinalBean;
+import com.ecartes.bean.RawMaterialInwardBean;
+
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.ExceptionConverter;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Font.FontFamily;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfPageEventHelper;
+import com.itextpdf.text.pdf.PdfTemplate;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.ColumnText;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfName;
+import com.itextpdf.text.pdf.PdfWriter;
+
+public class PdfFile {
+
+	public class HeaderFooterPageEvent extends PdfPageEventHelper {
+		Font font;
+		PdfTemplate t;
+		Image total;
+
+		@Override
+		public void onOpenDocument(PdfWriter writer, Document document) {
+			t = writer.getDirectContent().createTemplate(30, 16);
+			try {
+				total = Image.getInstance(t);
+				total.setRole(PdfName.ARTIFACT);
+				font = new Font(FontFamily.TIMES_ROMAN, 12);
+			} catch (DocumentException de) {
+				throw new ExceptionConverter(de);
+			}
+		}
+
+		@Override
+		public void onEndPage(PdfWriter writer, Document document) {
+			try {
+				PdfPTable table = new PdfPTable(3);
+				table.setWidths(new int[] { 24, 24, 2 });
+				table.setTotalWidth(770);
+				table.getDefaultCell().setFixedHeight(20);
+				table.getDefaultCell().setBorder(Rectangle.BOTTOM);
+				table.addCell(new Phrase(" ", font));
+				table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_RIGHT);
+				table.addCell(new Phrase(String.format("Page %d of", writer.getPageNumber()), font));
+				PdfPCell cell = new PdfPCell(total);
+				cell.setBorder(Rectangle.BOTTOM);
+				table.addCell(cell);
+				PdfContentByte canvas = writer.getDirectContent();
+				canvas.beginMarkedContentSequence(PdfName.ARTIFACT);
+				table.writeSelectedRows(0, -1, 36, 30, canvas);
+				canvas.endMarkedContentSequence();
+
+			} catch (DocumentException e) {
+				e.printStackTrace();
+
+			}
+		}
+
+		@Override
+		public void onCloseDocument(PdfWriter writer, Document document) {
+			ColumnText.showTextAligned(t, Element.ALIGN_LEFT, new Phrase(String.valueOf(writer.getPageNumber()), font),
+					2, 4, 0);
+		}
+	}
+
+	public String pdfData(List<RawMaterialInwardBean> list, String path, String reportName) throws DocumentException {
+		SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy_hhmmss");
+//		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
+
+		String file = path + sdf.format(new Date()) + ".pdf";
+		String excelFileNameReturn = sdf.format(new Date()) + ".pdf";
+
+		Document document = new Document(PageSize.A4.rotate());
+		try {
+			// special font sizes
+			Font title_font = new Font(FontFamily.TIMES_ROMAN, 14, Font.NORMAL, new BaseColor(0, 0, 0));
+			Font header_font = new Font(FontFamily.TIMES_ROMAN, 12, Font.NORMAL, new BaseColor(0, 0, 0));
+			Font text_font = new Font(FontFamily.TIMES_ROMAN, 11);
+
+			PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(file));
+			Rectangle rect = new Rectangle(30, 30, 550, 800);
+			writer.setBoxSize("art", rect);
+			HeaderFooterPageEvent event = new HeaderFooterPageEvent();
+			writer.setPageEvent(event);
+			document.open();
+			Paragraph para = (new Paragraph(reportName, title_font));
+			para.setAlignment(Paragraph.ALIGN_CENTER);
+			para.getSpacingAfter();
+			document.add(para);
+
+			PdfPTable table = new PdfPTable(10); // 10 columns.
+			table.setWidthPercentage(100); // Width 100%
+			table.setSpacingBefore(10f); // Space before table
+			table.setSpacingAfter(10f); // Space after table
+
+			// Set Column widths
+			float[] columnWidths = { 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f };
+			table.setWidths(columnWidths);
+
+			PdfPCell srno_1 = new PdfPCell(new Paragraph("Sr No.", header_font));
+			srno_1.setPaddingLeft(1);
+			srno_1.setHorizontalAlignment(Element.ALIGN_CENTER);
+			srno_1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(srno_1);
+
+			PdfPCell accessionNumber = new PdfPCell(new Paragraph("Asset Tag to be Encoded", header_font));
+			accessionNumber.setPaddingLeft(5);
+			accessionNumber.setHorizontalAlignment(Element.ALIGN_CENTER);
+			accessionNumber.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(accessionNumber);
+
+			PdfPCell RefFolderOrderNo = new PdfPCell(new Paragraph("Last Scan Building & Floor", header_font));
+			RefFolderOrderNo.setPaddingLeft(5);
+			RefFolderOrderNo.setHorizontalAlignment(Element.ALIGN_CENTER);
+			RefFolderOrderNo.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(RefFolderOrderNo);
+
+			PdfPCell description = new PdfPCell(new Paragraph("Last Scan Space Name", header_font));
+			description.setPaddingLeft(5);
+			description.setHorizontalAlignment(Element.ALIGN_CENTER);
+			description.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(description);
+
+			PdfPCell saiNo = new PdfPCell(new Paragraph("Scan Building & Floor", header_font));
+			saiNo.setPaddingLeft(5);
+			saiNo.setHorizontalAlignment(Element.ALIGN_CENTER);
+			saiNo.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(saiNo);
+
+			PdfPCell quantity = new PdfPCell(new Paragraph("Scan Space Name", header_font));
+			quantity.setPaddingLeft(5);
+			quantity.setHorizontalAlignment(Element.ALIGN_CENTER);
+			quantity.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(quantity);
+
+			PdfPCell unit = new PdfPCell(new Paragraph("Trade", header_font));
+			unit.setPaddingLeft(5);
+			unit.setHorizontalAlignment(Element.ALIGN_CENTER);
+			unit.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(unit);
+
+			PdfPCell amount = new PdfPCell(new Paragraph("Sub Type", header_font));
+			amount.setPaddingLeft(5);
+			amount.setHorizontalAlignment(Element.ALIGN_CENTER);
+			amount.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(amount);
+
+			PdfPCell currentLocation = new PdfPCell(new Paragraph("Asset UID", header_font));
+			currentLocation.setPaddingLeft(5);
+			currentLocation.setHorizontalAlignment(Element.ALIGN_CENTER);
+			currentLocation.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(currentLocation);
+
+			PdfPCell custodian = new PdfPCell(new Paragraph("Types of Tags", header_font));
+			custodian.setPaddingLeft(5);
+			custodian.setHorizontalAlignment(Element.ALIGN_CENTER);
+			custodian.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(custodian);
+
+			if (list != null && list.size() > 0) {
+				for (int i = 0; i < list.size(); i++) {
+					String data = "--";
+					if (list.get(i) != null) {
+						Integer data1 = i + 1;
+						table.addCell(new Phrase(data1.toString(), text_font));
+					}
+					if (list.get(i).getAssetTagToBeEncoded() != null) {
+						String data2 = list.get(i).getAssetTagToBeEncoded();
+						table.addCell(new Phrase(data2, text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getBinLocation() != null
+							&& list.get(i).getBinLocation().getItemLocationName() != null
+							&& list.get(i).getBinLocation().getItemLocationParent() != null
+							&& list.get(i).getBinLocation().getItemLocationParent().getItemLocationName() != null) {
+						String data3 = list.get(i).getBinLocation().getItemLocationParent().getItemLocationName()
+								+ list.get(i).getBinLocation().getItemLocationName();
+						table.addCell(new Phrase(data3, text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getSpaceFloorName() != null) {
+						String data4 = list.get(i).getSpaceFloorName();
+						table.addCell(new Phrase(data4, text_font));
+
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getScanLocation() != null
+							&& list.get(i).getScanLocation().getItemLocationParent() != null
+							&& list.get(i).getScanLocation().getItemLocationParent().getItemLocationName() != null
+							&& list.get(i).getScanLocation().getItemLocationName() != null) {
+						String data5 = list.get(i).getScanLocation().getItemLocationParent().getItemLocationName()
+								+ list.get(i).getScanLocation().getItemLocationName();
+						table.addCell(new Phrase(data5, text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getScanSpaceFloorName() != null) {
+						String data6 = list.get(i).getScanSpaceFloorName();
+						table.addCell(new Phrase(data6, text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getTrade() != null) {
+						String data7 = list.get(i).getTrade();
+						table.addCell(new Phrase(data7, text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getAssetCategory() != null
+							&& list.get(i).getAssetCategory().getAssetCategoryName() != null) {
+						String data8 = list.get(i).getAssetCategory().getAssetCategoryName();
+						table.addCell(new Phrase(data8, text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getAssetUID() != null) {
+						String data9 = list.get(i).getAssetUID();
+						table.addCell(new Phrase(data9.toString(), text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getTypeOfTags() != null) {
+						String data10 = list.get(i).getTypeOfTags();
+						table.addCell(new Phrase(data10.toString(), text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+				}
+			}
+			document.add(table);
+			document.close();
+			writer.close();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return excelFileNameReturn;
+	}
+
+	public String pdfDataInventory(List<ProcessTrackingFinalBean> list, String path, String reportName)
+			throws DocumentException {
+		SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy_hhmmss");
+//		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
+
+		String file = path + sdf.format(new Date()) + ".pdf";
+		String excelFileNameReturn = sdf.format(new Date()) + ".pdf";
+
+		Document document = new Document(PageSize.A4.rotate());
+		try {
+			// special font sizes
+			Font title_font = new Font(FontFamily.TIMES_ROMAN, 14, Font.NORMAL, new BaseColor(0, 0, 0));
+			Font header_font = new Font(FontFamily.TIMES_ROMAN, 12, Font.NORMAL, new BaseColor(0, 0, 0));
+			Font text_font = new Font(FontFamily.TIMES_ROMAN, 11);
+
+			PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(file));
+			Rectangle rect = new Rectangle(30, 30, 550, 800);
+			writer.setBoxSize("art", rect);
+			HeaderFooterPageEvent event = new HeaderFooterPageEvent();
+			writer.setPageEvent(event);
+			document.open();
+			Paragraph para = (new Paragraph(reportName, title_font));
+			para.setAlignment(Paragraph.ALIGN_CENTER);
+			para.getSpacingAfter();
+			document.add(para);
+
+			PdfPTable table = new PdfPTable(9); // 9 columns.
+			table.setWidthPercentage(100); // Width 100%
+			table.setSpacingBefore(10f); // Space before table
+			table.setSpacingAfter(10f); // Space after table
+
+			// Set Column widths
+			float[] columnWidths = { 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f };
+			table.setWidths(columnWidths);
+
+			PdfPCell srno_1 = new PdfPCell(new Paragraph("Sr No.", header_font));
+			srno_1.setPaddingLeft(1);
+			srno_1.setHorizontalAlignment(Element.ALIGN_CENTER);
+			srno_1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(srno_1);
+
+			PdfPCell accessionNumber = new PdfPCell(new Paragraph("Asset Tag to be Encoded", header_font));
+			accessionNumber.setPaddingLeft(5);
+			accessionNumber.setHorizontalAlignment(Element.ALIGN_CENTER);
+			accessionNumber.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(accessionNumber);
+
+			PdfPCell RefFolderOrderNo = new PdfPCell(new Paragraph("Last Scan Building & Floor", header_font));
+			RefFolderOrderNo.setPaddingLeft(5);
+			RefFolderOrderNo.setHorizontalAlignment(Element.ALIGN_CENTER);
+			RefFolderOrderNo.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(RefFolderOrderNo);
+
+			PdfPCell description = new PdfPCell(new Paragraph("Last Scan Space Name", header_font));
+			description.setPaddingLeft(5);
+			description.setHorizontalAlignment(Element.ALIGN_CENTER);
+			description.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(description);
+
+			PdfPCell saiNo = new PdfPCell(new Paragraph("Scan Building & Floor", header_font));
+			saiNo.setPaddingLeft(5);
+			saiNo.setHorizontalAlignment(Element.ALIGN_CENTER);
+			saiNo.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(saiNo);
+
+			PdfPCell quantity = new PdfPCell(new Paragraph("Scan Space Name", header_font));
+			quantity.setPaddingLeft(5);
+			quantity.setHorizontalAlignment(Element.ALIGN_CENTER);
+			quantity.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(quantity);
+
+			PdfPCell amount = new PdfPCell(new Paragraph("Sub Type", header_font));
+			amount.setPaddingLeft(5);
+			amount.setHorizontalAlignment(Element.ALIGN_CENTER);
+			amount.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(amount);
+
+			PdfPCell currentLocation = new PdfPCell(new Paragraph("Asset UID", header_font));
+			currentLocation.setPaddingLeft(5);
+			currentLocation.setHorizontalAlignment(Element.ALIGN_CENTER);
+			currentLocation.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(currentLocation);
+
+			PdfPCell custodian = new PdfPCell(new Paragraph("Type of Tags", header_font));
+			custodian.setPaddingLeft(5);
+			custodian.setHorizontalAlignment(Element.ALIGN_CENTER);
+			custodian.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(custodian);
+
+			if (list != null && list.size() > 0) {
+				for (int i = 0; i < list.size(); i++) {
+					String data = "--";
+					if (list.get(i) != null) {
+						Integer data1 = i + 1;
+						table.addCell(new Phrase(data1.toString(), text_font));
+					}
+
+					if (list.get(i).getRawMaterialInward() != null
+							&& list.get(i).getRawMaterialInward().getAssetTagToBeEncoded() != null) {
+						String data2 = list.get(i).getRawMaterialInward().getAssetTagToBeEncoded();
+						table.addCell(new Phrase(data2, text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getRawMaterialInward() != null
+							&& list.get(i).getRawMaterialInward().getBinLocation() != null
+							&& list.get(i).getRawMaterialInward().getBinLocation().getItemLocationName() != null
+							&& list.get(i).getRawMaterialInward().getBinLocation().getItemLocationParent() != null
+							&& list.get(i).getRawMaterialInward().getBinLocation().getItemLocationParent()
+									.getItemLocationName() != null) {
+						String data3 = list.get(i).getRawMaterialInward().getBinLocation().getItemLocationParent()
+								.getItemLocationName() + " / "
+								+ list.get(i).getRawMaterialInward().getBinLocation().getItemLocationName();
+						table.addCell(new Phrase(data3, text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getRawMaterialInward() != null
+							&& list.get(i).getRawMaterialInward().getSpaceFloorName() != null) {
+						String data4 = list.get(i).getRawMaterialInward().getSpaceFloorName();
+						table.addCell(new Phrase(data4, text_font));
+
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getRawMaterialInward() != null
+							&& list.get(i).getRawMaterialInward().getScanLocation() != null
+							&& list.get(i).getRawMaterialInward().getScanLocation().getItemLocationParent() != null
+							&& list.get(i).getRawMaterialInward().getScanLocation().getItemLocationParent()
+									.getItemLocationName() != null
+							&& list.get(i).getRawMaterialInward().getScanLocation().getItemLocationName() != null) {
+						String data5 = list.get(i).getRawMaterialInward().getScanLocation().getItemLocationParent()
+								.getItemLocationName() + " / "
+								+ list.get(i).getRawMaterialInward().getScanLocation().getItemLocationName();
+						table.addCell(new Phrase(data5, text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getRawMaterialInward() != null
+							&& list.get(i).getRawMaterialInward().getScanSpaceFloorName() != null) {
+						String data6 = list.get(i).getRawMaterialInward().getScanSpaceFloorName();
+						table.addCell(new Phrase(data6, text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getRawMaterialInward() != null
+							&& list.get(i).getRawMaterialInward().getAssetCategory() != null
+							&& list.get(i).getRawMaterialInward().getAssetCategory().getAssetCategoryName() != null) {
+						String data7 = list.get(i).getRawMaterialInward().getAssetCategory().getAssetCategoryName();
+						table.addCell(new Phrase(data7, text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getRawMaterialInward() != null
+							&& list.get(i).getRawMaterialInward().getAssetUID() != null) {
+						String data8 = list.get(i).getRawMaterialInward().getAssetUID();
+						table.addCell(new Phrase(data8.toString(), text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getRawMaterialInward() != null
+							&& list.get(i).getRawMaterialInward().getTypeOfTags() != null) {
+						String data9 = list.get(i).getRawMaterialInward().getTypeOfTags();
+						table.addCell(new Phrase(data9.toString(), text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+				}
+			}
+			document.add(table);
+			document.close();
+			writer.close();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return excelFileNameReturn;
+	}
+
+	public String pdfDataNotInventory(List<RawMaterialInwardBean> list, String path, String reportName)
+			throws DocumentException {
+		SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy_hhmmss");
+//		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
+
+		String file = path + sdf.format(new Date()) + ".pdf";
+		String excelFileNameReturn = sdf.format(new Date()) + ".pdf";
+
+		Document document = new Document(PageSize.A4.rotate());
+		try {
+			// special font sizes
+			Font title_font = new Font(FontFamily.TIMES_ROMAN, 14, Font.NORMAL, new BaseColor(0, 0, 0));
+			Font header_font = new Font(FontFamily.TIMES_ROMAN, 12, Font.NORMAL, new BaseColor(0, 0, 0));
+			Font text_font = new Font(FontFamily.TIMES_ROMAN, 11);
+
+			PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(file));
+			Rectangle rect = new Rectangle(30, 30, 550, 800);
+			writer.setBoxSize("art", rect);
+			HeaderFooterPageEvent event = new HeaderFooterPageEvent();
+			writer.setPageEvent(event);
+			document.open();
+			Paragraph para = (new Paragraph(reportName, title_font));
+			para.setAlignment(Paragraph.ALIGN_CENTER);
+			para.getSpacingAfter();
+			document.add(para);
+
+			PdfPTable table = new PdfPTable(10); // 10 columns.
+			table.setWidthPercentage(100); // Width 100%
+			table.setSpacingBefore(10f); // Space before table
+			table.setSpacingAfter(10f); // Space after table
+
+			// Set Column widths
+			float[] columnWidths = { 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f };
+			table.setWidths(columnWidths);
+
+			PdfPCell srno_1 = new PdfPCell(new Paragraph("Sr No.", header_font));
+			srno_1.setPaddingLeft(1);
+			srno_1.setHorizontalAlignment(Element.ALIGN_CENTER);
+			srno_1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(srno_1);
+
+			PdfPCell accessionNumber = new PdfPCell(new Paragraph("Asset Tag to be Encoded", header_font));
+			accessionNumber.setPaddingLeft(5);
+			accessionNumber.setHorizontalAlignment(Element.ALIGN_CENTER);
+			accessionNumber.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(accessionNumber);
+
+			PdfPCell RefFolderOrderNo = new PdfPCell(new Paragraph("Last Scan Building & Floor", header_font));
+			RefFolderOrderNo.setPaddingLeft(5);
+			RefFolderOrderNo.setHorizontalAlignment(Element.ALIGN_CENTER);
+			RefFolderOrderNo.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(RefFolderOrderNo);
+
+			PdfPCell description = new PdfPCell(new Paragraph("Last Scan Space Name", header_font));
+			description.setPaddingLeft(5);
+			description.setHorizontalAlignment(Element.ALIGN_CENTER);
+			description.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(description);
+
+			PdfPCell saiNo = new PdfPCell(new Paragraph("Scan Building & Floor", header_font));
+			saiNo.setPaddingLeft(5);
+			saiNo.setHorizontalAlignment(Element.ALIGN_CENTER);
+			saiNo.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(saiNo);
+
+			PdfPCell quantity = new PdfPCell(new Paragraph("Scan Space Name", header_font));
+			quantity.setPaddingLeft(5);
+			quantity.setHorizontalAlignment(Element.ALIGN_CENTER);
+			quantity.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(quantity);
+
+			PdfPCell unit = new PdfPCell(new Paragraph("Trade", header_font));
+			unit.setPaddingLeft(5);
+			unit.setHorizontalAlignment(Element.ALIGN_CENTER);
+			unit.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(unit);
+
+			PdfPCell amount = new PdfPCell(new Paragraph("Sub Type", header_font));
+			amount.setPaddingLeft(5);
+			amount.setHorizontalAlignment(Element.ALIGN_CENTER);
+			amount.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(amount);
+
+			PdfPCell currentLocation = new PdfPCell(new Paragraph("Asset UID1", header_font));
+			currentLocation.setPaddingLeft(5);
+			currentLocation.setHorizontalAlignment(Element.ALIGN_CENTER);
+			currentLocation.setVerticalAlignment(Element.ALIGN_MIDDLE);
+			table.addCell(currentLocation);
+
+			table.addCell(currentLocation);
+			if (list != null && list.size() > 0) {
+				for (int i = 0; i < list.size(); i++) {
+					String data = "--";
+					if (list.get(i) != null) {
+						Integer data1 = i + 1;
+						table.addCell(new Phrase(data1.toString(), text_font));
+					}
+
+					if (list.get(i).getAssetTagToBeEncoded() != null) {
+						String data2 = list.get(i).getAssetTagToBeEncoded();
+						table.addCell(new Phrase(data2, text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getBinLocation() != null
+							&& list.get(i).getBinLocation().getItemLocationName() != null
+							&& list.get(i).getBinLocation().getItemLocationParent() != null
+							&& list.get(i).getBinLocation().getItemLocationParent().getItemLocationName() != null) {
+						String data3 = list.get(i).getBinLocation().getItemLocationName()
+								+ list.get(i).getBinLocation().getItemLocationParent().getItemLocationName();
+						table.addCell(new Phrase(data3, text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getSpaceFloorName() != null) {
+						String data4 = list.get(i).getSpaceFloorName();
+						table.addCell(new Phrase(data4, text_font));
+
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getScanLocation() != null
+							&& list.get(i).getScanLocation().getItemLocationParent() != null
+							&& list.get(i).getScanLocation().getItemLocationParent().getItemLocationName() != null
+							&& list.get(i).getScanLocation().getItemLocationName() != null) {
+						String data5 = list.get(i).getScanLocation().getItemLocationParent().getItemLocationName()
+								+ list.get(i).getScanLocation().getItemLocationName();
+						table.addCell(new Phrase(data5, text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getScanSpaceFloorName() != null) {
+						String data6 = list.get(i).getScanSpaceFloorName();
+						table.addCell(new Phrase(data6, text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getTrade() != null) {
+						String data7 = list.get(i).getTrade();
+						table.addCell(new Phrase(data7, text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getAssetCategory() != null
+							&& list.get(i).getAssetCategory().getAssetCategoryName() != null) {
+						String data8 = list.get(i).getAssetCategory().getAssetCategoryName();
+						table.addCell(new Phrase(data8, text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getScanLocation() != null
+							&& list.get(i).getScanLocation().getItemLocationParent() != null) {
+						String data9 = list.get(i).getScanLocation().getItemLocationParent().getItemLocationName()
+								+ list.get(i).getScanLocation().getItemLocationName();
+						table.addCell(new Phrase(data9.toString(), text_font));
+					} else if (list.get(i).getScanLocation() != null) {
+						String data9 = list.get(i).getScanLocation().getItemLocationName();
+						table.addCell(new Phrase(data9.toString(), text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+					if (list.get(i).getAssetUID() != null) {
+						String data10 = list.get(i).getAssetUID();
+						table.addCell(new Phrase(data10.toString(), text_font));
+					} else {
+						table.addCell(new Phrase(data, text_font));
+					}
+
+				}
+			}
+			document.add(table);
+			document.close();
+			writer.close();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return excelFileNameReturn;
+	}
+
+	public void process(PdfPTable table, String line, Font font) {
+		StringTokenizer tokenizer = new StringTokenizer(line, ";");
+		while (tokenizer.hasMoreTokens()) {
+			table.addCell(new Phrase(tokenizer.nextToken(), font));
+		}
+	}
+
+}

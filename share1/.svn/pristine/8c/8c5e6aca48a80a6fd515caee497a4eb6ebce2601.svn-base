@@ -1,0 +1,296 @@
+package com.ecartes.controller;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Date;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+
+import com.ecartes.bean.ItemLocationBean;
+import com.ecartes.bean.LoginBean;
+import com.ecartes.common.Common;
+import com.ecartes.model.ItemLocationModel;
+import com.ecartes.service.ItemLocationService;
+import com.ecartes.validator.ItemLocationValidator;
+
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+@Controller
+public class ItemLocationController {
+
+	@Autowired
+	ItemLocationService itemLocationService;
+
+	@Autowired
+	ItemLocationValidator itemLocationValidator;
+
+	@ModelAttribute
+	public void addingCommonObject(Model model, HttpServletRequest request) {
+		model.addAttribute("itemLocationType",
+				ItemLocationBean.prepareListBean(itemLocationService.getListItemLocation(0)));
+
+	}
+
+	@InitBinder
+	public void InitBinder(WebDataBinder binder) {
+		binder.addValidators(itemLocationValidator);
+	}
+
+	@RequestMapping(value = "/addItemLocation", method = RequestMethod.GET)
+	public ModelAndView addItemLocation(@ModelAttribute("command") ItemLocationBean itemLocationBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = new ModelAndView("pages/itemLocation/additemLocation");
+		itemLocationBean.setActive(true);
+		modelAndView.addObject("itemLocationBean", itemLocationBean);
+		return modelAndView;
+
+	}
+
+	@RequestMapping(value = "/saveItemLocation", method = RequestMethod.POST)
+	public ModelAndView saveItemLocation(@ModelAttribute("command") @Validated ItemLocationBean itemLocationBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/itemLocation/additemLocation");
+			return modelAndView;
+		} else {
+			LoginBean loginUser = (LoginBean) request.getSession().getAttribute("LOGGEDIN_USER");
+			modelAndView = new ModelAndView("pages/itemLocation/displayitemLocation");
+
+			ItemLocationModel model = ItemLocationBean.prepareModel(itemLocationBean);
+
+			ItemLocationModel itemLocationModel = null;
+
+			if (itemLocationModel == null && itemLocationBean.getItemLocationName() != null
+					&& itemLocationBean.getItemLocationName().length() > 0) {
+				itemLocationModel = itemLocationService.getParentLocationByName(model.getItemLocationName());
+				if (itemLocationModel != null && !itemLocationModel.getItemLocationParent().getItemLocationName()
+						.equalsIgnoreCase(model.getItemLocationParent().getItemLocationName())) {
+					if (itemLocationModel.getItemLocationId() > 0
+							&& (model.getItemLocationId() == null || model.getItemLocationId() <= 0)) {
+						modelAndView = new ModelAndView("pages/itemLocation/additemLocation");
+						modelAndView.addObject("itemLocationBean", itemLocationBean);
+						ObjectError objectError = new ObjectError("message",
+								"Floor Name already registered with Building "
+										+ itemLocationModel.getItemLocationParent().getItemLocationName());
+						result.addError(objectError);
+						return modelAndView;
+					} else if (itemLocationModel.getItemLocationId() > 0 && model.getItemLocationId() != null
+							&& !itemLocationModel.getItemLocationId().equals(model.getItemLocationId())) {
+						modelAndView = new ModelAndView("pages/itemLocation/additemLocation");
+						modelAndView.addObject("itemLocationBean", itemLocationBean);
+						ObjectError objectError = new ObjectError("message",
+								"Floor Name already registered with Building"
+										+ itemLocationModel.getItemLocationParent().getItemLocationName());
+						result.addError(objectError);
+						return modelAndView;
+					} else
+						itemLocationModel = null;
+
+				} else
+					itemLocationModel = null;
+
+			}
+
+			itemLocationBean.setCreatedOn(new Date());
+			itemLocationBean.setModifyOn(new Date());
+			itemLocationBean.setCreatedBy(loginUser.getLoginId());
+			itemLocationBean.setModifyBy(loginUser.getLoginId());
+			itemLocationService.addItemLocation(ItemLocationBean.prepareModel(itemLocationBean));
+
+			modelAndView.addObject("itemLocationList",
+					ItemLocationBean.prepareListBean(itemLocationService.getListItemLocationAll()));
+			modelAndView.addObject("itemLocationBean", itemLocationBean);
+			return modelAndView;
+		}
+	}
+
+	@RequestMapping(value = "/displayItemLocation", method = { RequestMethod.GET, RequestMethod.POST })
+	public ModelAndView displayItemLocation(@ModelAttribute("command") ItemLocationBean itemLocationBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/itemLocation/displayitemLocation");
+			return modelAndView;
+		} else {
+
+			modelAndView = new ModelAndView("pages/itemLocation/displayitemLocation");
+
+			List<ItemLocationBean> list = null;
+
+			if (request.getMethod().equalsIgnoreCase("POST"))
+
+				list = ItemLocationBean.prepareListBean(itemLocationService.getListLocationByFilter(itemLocationBean));
+
+//			else
+//				list = ItemLocationBean.prepareListBean(itemLocationService.getListItemLocationOnly());
+
+			modelAndView.addObject("itemLocationList", list);
+
+//			modelAndView.addObject("itemLocationList",
+//					ItemLocationBean.prepareListBean(itemLocationService.getListItemLocationOnly()));
+
+			modelAndView.addObject("itemLocationBean", itemLocationBean);
+			return modelAndView;
+		}
+
+	}
+
+	@RequestMapping(value = "/editItemLocation", method = RequestMethod.GET)
+	public ModelAndView editItemLocation(@ModelAttribute("command") ItemLocationBean itemLocationBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/itemLocation/additemLocation");
+			return modelAndView;
+		} else {
+			modelAndView = new ModelAndView("pages/itemLocation/additemLocation");
+			modelAndView.addObject("itemLocationBean", ItemLocationBean
+					.prepareBean(itemLocationService.getItemLocation(itemLocationBean.getItemLocationId())));
+			return modelAndView;
+		}
+	}
+
+	// *****************************************************************************
+
+	@RequestMapping(value = "/addItemLocationType", method = RequestMethod.GET)
+	public ModelAndView addItemLocationType(@ModelAttribute("command") ItemLocationBean itemLocationBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = new ModelAndView("pages/itemLocation/additemLocationBuilding");
+		itemLocationBean.setActive(true);
+		modelAndView.addObject("itemLocationBean", itemLocationBean);
+		return modelAndView;
+	}
+
+	@RequestMapping(value = "/saveItemLocationType", method = RequestMethod.POST)
+	public ModelAndView saveItemLocationType(@ModelAttribute("command") @Validated ItemLocationBean itemLocationBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/itemLocation/additemLocationBuilding");
+			return modelAndView;
+		} else {
+
+			LoginBean loginUser = (LoginBean) request.getSession().getAttribute("LOGGEDIN_USER");
+			modelAndView = new ModelAndView("pages/itemLocation/displayitemLocationBuilding");
+
+			String path = Common.DownloadExcelFilesEpc;
+			String filename = null;
+
+			if (itemLocationBean.getImagePath() != null && itemLocationBean.getImagePath().getOriginalFilename() != null
+					&& itemLocationBean.getImagePath().getOriginalFilename().length() > 0) {
+				
+				filename = System.currentTimeMillis() + "_" + itemLocationBean.getImagePath().getOriginalFilename();
+				itemLocationBean.setImagePathUrl(filename);
+				byte[] bytes = itemLocationBean.getImagePath().getBytes();
+				upload(bytes, new File(path + File.separator + filename));
+			}
+
+			if (itemLocationBean.getPdfPath() != null && itemLocationBean.getPdfPath().getOriginalFilename() != null
+					&& itemLocationBean.getPdfPath().getOriginalFilename().length() > 0) {
+				filename = System.currentTimeMillis() + "_" + itemLocationBean.getPdfPath().getOriginalFilename();
+				itemLocationBean.setPdfPathUrl(filename);
+				byte[] bytes = itemLocationBean.getPdfPath().getBytes();
+				upload(bytes, new File(path + File.separator + filename));
+			}
+
+			ItemLocationModel model = ItemLocationBean.prepareModel(itemLocationBean);
+
+			ItemLocationModel itemLocationModel = null;
+			if (itemLocationBean != null && itemLocationBean.getItemLocationId() == null
+					|| itemLocationBean.getItemLocationId() <= 0) {
+
+				itemLocationModel = itemLocationService.getParentLocationByName(model.getItemLocationName());
+				if (itemLocationModel != null) {
+					modelAndView = new ModelAndView("pages/itemLocation/additemLocationBuilding");
+					modelAndView.addObject("itemLocationBean", itemLocationBean);
+					ObjectError objectError = new ObjectError("message", "Building name already exit!");
+					result.addError(objectError);
+					return modelAndView;
+				}
+			}
+
+			itemLocationBean.setCreatedOn(new Date());
+			itemLocationBean.setModifyOn(new Date());
+			itemLocationBean.setCreatedBy(loginUser.getLoginId());
+			itemLocationBean.setModifyBy(loginUser.getLoginId());
+			itemLocationService.addItemLocation(ItemLocationBean.prepareModel(itemLocationBean));
+
+			modelAndView.addObject("itemLocationList",
+					ItemLocationBean.prepareListBean(itemLocationService.getListItemLocationParent()));
+
+			modelAndView.addObject("itemLocationBean", itemLocationBean);
+			return modelAndView;
+
+		}
+	}
+
+	@RequestMapping(value = "/displayItemLocationType", method = RequestMethod.GET)
+	public ModelAndView displayItemLocationType(@ModelAttribute("command") ItemLocationBean itemLocationBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/itemLocation/displayitemLocationBuilding");
+			return modelAndView;
+		} else {
+
+			modelAndView = new ModelAndView("pages/itemLocation/displayitemLocationBuilding");
+
+			List<ItemLocationBean> list = null;
+
+			list = ItemLocationBean.prepareListBean(itemLocationService.getListItemLocationParent());
+
+			modelAndView.addObject("itemLocationList", list);
+
+//			modelAndView.addObject("itemLocationList",
+//					ItemLocationBean.prepareListBean(itemLocationService.getListItemLocationOnly()));
+
+			modelAndView.addObject("itemLocationBean", itemLocationBean);
+			return modelAndView;
+		}
+
+	}
+
+	@RequestMapping(value = "/editItemLocationType", method = RequestMethod.GET)
+	public ModelAndView editItemLocationType(@ModelAttribute("command") ItemLocationBean itemLocationBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/itemLocation/additemLocationBuilding");
+			return modelAndView;
+		} else {
+			modelAndView = new ModelAndView("pages/itemLocation/additemLocationBuilding");
+			modelAndView.addObject("itemLocationBean", ItemLocationBean
+					.prepareBean(itemLocationService.getItemLocation(itemLocationBean.getItemLocationId())));
+			return modelAndView;
+		}
+	}
+
+	public void upload(byte[] bytes, File file) {
+		try {
+			BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(file));
+			stream.write(bytes);
+			stream.flush();
+			stream.close();
+			System.out.println("upload file");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+}

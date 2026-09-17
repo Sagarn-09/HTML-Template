@@ -1,0 +1,259 @@
+package com.ecartes.bean;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
+
+import com.ecartes.model.LoginModel;
+
+public class LoginBean implements Serializable {
+	private static final long serialVersionUID = -723583058586873479L;
+	private Integer loginId = null;
+
+	public Integer getLoginId() {
+		return loginId;
+	}
+
+	public void setLoginId(Integer loginId) {
+		this.loginId = loginId;
+	}
+
+	
+	private String mode = null;
+	public String getMode() {
+		return mode;
+	}
+	public void setMode(String mode) {
+		this.mode = mode;
+	}
+
+	private String createdOnUtc = null;
+	private String modifyOnUtc = null;
+
+	public String getCreatedOnUtc() {
+		return createdOnUtc;
+	}
+
+	public void setCreatedOnUtc(String createdOnUtc) {
+		this.createdOnUtc = createdOnUtc;
+	}
+
+	public String getModifyOnUtc() {
+		return modifyOnUtc;
+	}
+
+	public void setModifyOnUtc(String modifyOnUtc) {
+		this.modifyOnUtc = modifyOnUtc;
+	}
+
+	private String mobileNo = null;
+
+	public String getMobileNo() {
+		return mobileNo;
+	}
+
+	public void setMobileNo(String mobileNo) {
+		this.mobileNo = mobileNo;
+	}
+
+	private String userName = null;
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	private String userLoginId = null;
+
+	public String getUserLoginId() {
+		return userLoginId;
+	}
+
+	public void setUserLoginId(String userLoginId) {
+		this.userLoginId = userLoginId;
+	}
+
+	private String password = null;
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	private RoleTypeBean userRole = null;
+
+	public RoleTypeBean getUserRole() {
+		return userRole;
+	}
+
+	public void setUserRole(RoleTypeBean userRole) {
+		this.userRole = userRole;
+	}
+
+	private Integer createdBy = 0;
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	private Date createdOn = null;
+
+	public Date getCreatedOn() {
+		return createdOn;
+	}
+
+	public void setCreatedOn(Date createdOn) {
+		this.createdOn = createdOn;
+	}
+
+	private Integer modifyBy = 0;
+
+	public Integer getModifyBy() {
+		return modifyBy;
+	}
+
+	public void setModifyBy(Integer modifyBy) {
+		this.modifyBy = modifyBy;
+	}
+
+	private Date modifyOn = null;
+
+	public Date getModifyOn() {
+		return modifyOn;
+	}
+
+	public void setModifyOn(Date modifyOn) {
+		this.modifyOn = modifyOn;
+	}
+
+	private Boolean active = false;
+
+	public Boolean getActive() {
+		return active;
+	}
+
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+
+	private Boolean successFlag = null;
+
+	public Boolean getSuccessFlag() {
+		return successFlag;
+	}
+
+	public void setSuccessFlag(Boolean successFlag) {
+		this.successFlag = successFlag;
+	}
+
+	private String message = null;
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	private String callingPage = null;
+
+	public String getCallingPage() {
+		return callingPage;
+	}
+
+	public void setCallingPage(String callingPage) {
+		this.callingPage = callingPage;
+	}
+
+	private String operation = null;
+
+	public String getOperation() {
+		return operation;
+	}
+
+	public void setOperation(String operation) {
+		this.operation = operation;
+	}
+	
+	private Integer locationId = null;
+
+	public Integer getLocationId() {
+		return locationId;
+	}
+
+	public void setLocationId(Integer locationId) {
+		this.locationId = locationId;
+	}
+
+	public static LoginModel prepareModel(LoginBean bean) {
+		LoginModel model = new LoginModel();
+		model.setLoginId(bean.getLoginId());
+		model.setUserName(bean.getUserName());
+		model.setMobileNo(bean.getMobileNo());
+		model.setUserLoginId(bean.getUserLoginId());
+		model.setPassword(bean.getPassword());
+		if (bean.getUserRole() != null)
+			model.setUserRole(RoleTypeBean.prepareModel(bean.getUserRole()));
+		model.setCreatedBy(bean.getCreatedBy());
+		model.setCreatedOn(bean.getCreatedOn());
+		model.setModifyBy(bean.getModifyBy());
+		model.setModifyOn(bean.getModifyOn());
+		model.setActive(bean.getActive());
+		return model;
+	}
+
+	public static LoginBean prepareBean(LoginModel model) {
+		LoginBean bean = null;
+		if (model != null) {
+			bean = new LoginBean();
+			bean.setLoginId(model.getLoginId());
+			bean.setUserName(model.getUserName());
+			bean.setMobileNo(model.getMobileNo());
+			bean.setUserLoginId(model.getUserLoginId());
+			bean.setPassword(model.getPassword());
+			if (model.getUserRole() != null)
+				bean.setUserRole(RoleTypeBean.prepareBean(model.getUserRole()));
+			bean.setCreatedBy(model.getCreatedBy());
+			bean.setCreatedOn(model.getCreatedOn());
+			bean.setModifyBy(model.getModifyBy());
+			bean.setModifyOn(model.getModifyOn());
+			bean.setActive(model.getActive());
+
+		}
+		return bean;
+	}
+
+	public static List<LoginBean> prepareListBean(List<LoginModel> listModel) {
+		List<LoginBean> beans = null;
+		if (listModel != null && !listModel.isEmpty()) {
+			beans = new ArrayList<LoginBean>();
+			for (LoginModel model : listModel) {
+				beans.add(prepareBean(model));
+			}
+		}
+		return beans;
+	}
+
+	public static List<LoginModel> prepareListModel(List<LoginBean> beans) {
+		List<LoginModel> listModel = null;
+		if (beans != null && !beans.isEmpty()) {
+			listModel = new ArrayList<LoginModel>();
+			for (LoginBean bean : beans) {
+				listModel.add(prepareModel(bean));
+			}
+		}
+		return listModel;
+	}
+}

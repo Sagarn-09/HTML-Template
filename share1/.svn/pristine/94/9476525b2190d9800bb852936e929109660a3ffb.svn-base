@@ -1,0 +1,81 @@
+package com.ecartes.controller;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.ecartes.common.Common;
+
+@CrossOrigin(maxAge = 3600)
+@ComponentScan("com.ecartes")
+@RestController
+public class WSAssetTrackingFileController {
+
+	@RequestMapping(value = "/downloadExcel/{fileName}")
+	public void downloadExcel(HttpServletRequest request, HttpServletResponse response,
+			@PathVariable("fileName") String fileName) {
+//		System.out.println("fileName " + fileName);
+
+		Path file = Paths.get(Common.ExcelFiles + "/", fileName);
+		if (Files.exists(file)) {
+			response.setContentType("application/*");
+			response.addHeader("Content-Disposition", "attachment; filename=" + fileName);
+			try {
+				Files.copy(file, response.getOutputStream());
+				response.getOutputStream().flush();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+	}
+	
+	@RequestMapping(value = "/downloadExcelEpc/{fileName}")
+	public void downloadExcelEpc(HttpServletRequest request, HttpServletResponse response,
+			@PathVariable("fileName") String fileName) {
+//		System.out.println("fileName " + fileName);
+
+		Path file = Paths.get(Common.DownloadExcelFilesEpc + "/", fileName);
+		if (Files.exists(file)) {
+			response.setContentType("application/*");
+			response.addHeader("Content-Disposition", "attachment; filename=" + fileName);
+			try {
+				Files.copy(file, response.getOutputStream());
+				response.getOutputStream().flush();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+	}
+
+
+	@RequestMapping(value = "/downloadExcelfile/{fileName}")
+	public void downloadExcelfile(HttpServletRequest request, HttpServletResponse response,
+			@PathVariable("fileName") String fileName) {
+//		System.out.println("fileName " + fileName);
+
+		Path file = Paths.get(Common.DownloadExcelFiles + "/", fileName);
+		if (Files.exists(file)) {
+			response.setContentType("application/*");
+			response.addHeader("Content-Disposition", "attachment; filename=" + fileName);
+			try {
+				Files.copy(file, response.getOutputStream());
+				response.getOutputStream().flush();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+		
+		
+	}
+
+}

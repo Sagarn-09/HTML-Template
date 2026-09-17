@@ -1,0 +1,21 @@
+package com.ecartes.bean;
+
+public class ServiceAPI {
+
+	private static final long serialVersionUID = -723583058586873479L;
+	private String  opType=null;
+	private String  opData=null;
+	
+	public String getOpType() {
+		return opType;
+	}
+	public void setOpType(String opType) {
+		this.opType = opType;
+	}
+	public String getOpData() {
+		return opData;
+	}
+	public void setOpData(String opData) {
+		this.opData = opData;
+	}
+}

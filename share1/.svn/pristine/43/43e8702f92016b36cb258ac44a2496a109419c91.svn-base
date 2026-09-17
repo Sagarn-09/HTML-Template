@@ -1,0 +1,286 @@
+
+package com.ecartes.bean;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
+
+import com.ecartes.common.Common;
+import com.ecartes.model.TrackingInventoryFinalModel;
+
+public class TrackingInventoryFinalBean implements Serializable {
+	private static final long serialVersionUID = -723583058586873479L;
+	private Integer trackingInventoryId = 0;
+
+	public Integer getTrackingInventoryId() {
+		return trackingInventoryId;
+	}
+
+	public void setTrackingInventoryId(Integer trackingInventoryId) {
+		this.trackingInventoryId = trackingInventoryId;
+	}
+
+	private String itemEpcId = null;
+
+	public String getItemEpcId() {
+		return itemEpcId;
+	}
+
+	public void setItemEpcId(String itemEpcId) {
+		this.itemEpcId = itemEpcId;
+	}
+
+	private String createdOnUtc = null;
+	private String modifyOnUtc = null;
+
+	public String getCreatedOnUtc() {
+		return createdOnUtc;
+	}
+
+	public void setCreatedOnUtc(String createdOnUtc) {
+		this.createdOnUtc = createdOnUtc;
+	}
+
+	public String getModifyOnUtc() {
+		return modifyOnUtc;
+	}
+
+	public void setModifyOnUtc(String modifyOnUtc) {
+		this.modifyOnUtc = modifyOnUtc;
+	}
+
+	private String deviceIP = null;
+
+	public String getDeviceIP() {
+		return deviceIP;
+	}
+
+	public void setDeviceIP(String deviceIP) {
+		this.deviceIP = deviceIP;
+	}
+
+	private TrackingSessionBean trackingSession = null;
+
+	public TrackingSessionBean getTrackingSession() {
+		return trackingSession;
+	}
+
+	public void setTrackingSession(TrackingSessionBean trackingSession) {
+		this.trackingSession = trackingSession;
+	}
+
+	public RawMaterialInwardBean rawMaterialInward = null;
+
+	public RawMaterialInwardBean getRawMaterialInward() {
+		return rawMaterialInward;
+	}
+
+	public void setRawMaterialInward(RawMaterialInwardBean rawMaterialInward) {
+		this.rawMaterialInward = rawMaterialInward;
+	}
+
+	ItemLocationBean itemLocation = null;
+
+	public ItemLocationBean getItemLocation() {
+		return itemLocation;
+	}
+
+	public void setItemLocation(ItemLocationBean itemLocation) {
+		this.itemLocation = itemLocation;
+	}
+
+	private String status = null;
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	private Integer createdBy = null;
+	private Integer modifyBy = null;
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Integer getModifyBy() {
+		return modifyBy;
+	}
+
+	public void setModifyBy(Integer modifyBy) {
+		this.modifyBy = modifyBy;
+	}
+
+	private Date createdOn = null;
+
+	public Date getCreatedOn() {
+		return createdOn;
+	}
+
+	public void setCreatedOn(Date createdOn) {
+		this.createdOn = createdOn;
+	}
+
+	private Date modifyOn = null;
+
+	public Date getModifyOn() {
+		return modifyOn;
+	}
+
+	public void setModifyOn(Date modifyOn) {
+		this.modifyOn = modifyOn;
+	}
+
+	private Boolean active = false;
+
+	public Boolean getActive() {
+		return active;
+	}
+
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+
+	private Boolean successFlag = null;
+
+	public Boolean getSuccessFlag() {
+		return successFlag;
+	}
+
+	public void setSuccessFlag(Boolean successFlag) {
+		this.successFlag = successFlag;
+	}
+
+	private String message = null;
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	private String callingPage = null;
+
+	public String getCallingPage() {
+		return callingPage;
+	}
+
+	public void setCallingPage(String callingPage) {
+		this.callingPage = callingPage;
+	}
+
+	private String deviceSerialNo = null;
+
+	public String getDeviceSerialNo() {
+		return deviceSerialNo;
+	}
+
+	public void setDeviceSerialNo(String deviceSerialNo) {
+		this.deviceSerialNo = deviceSerialNo;
+	}
+
+	private String operation = null;
+
+	public String getOperation() {
+		return operation;
+	}
+
+	public void setOperation(String operation) {
+		this.operation = operation;
+	}
+
+	public static TrackingInventoryFinalModel prepareModel(TrackingInventoryFinalBean bean) {
+		TrackingInventoryFinalModel model = new TrackingInventoryFinalModel();
+		model.setTrackingInventoryId(bean.getTrackingInventoryId());
+
+		model.setStatus(bean.getStatus());
+		model.setCreatedBy(bean.getCreatedBy());
+		model.setCreatedOn(bean.getCreatedOn());
+
+		model.setCreatedOn(bean.getCreatedOn());
+		model.setModifyOn(bean.getModifyOn());
+		model.setActive(bean.getActive());
+		model.setDeviceSerialNo(bean.getDeviceSerialNo());
+		model.setItemEpcId(bean.getItemEpcId());
+
+		if (bean.getCreatedOnUtc() != null)
+			model.setCreatedOn(Common.getDateFromUtcFormat(bean.getCreatedOnUtc()));
+		if (bean.getModifyOnUtc() != null)
+			model.setModifyOn(Common.getDateFromUtcFormat(bean.getModifyOnUtc()));
+
+		if (bean.getItemLocation() != null) {
+			model.setItemLocation(ItemLocationBean.prepareModel(bean.getItemLocation()));
+		}
+		if (bean.getRawMaterialInward() != null && bean.getRawMaterialInward().getRawMaterialInwardID() > 0) {
+			model.setRawMaterialInward(RawMaterialInwardBean.prepareModel(bean.getRawMaterialInward()));
+		}
+
+		if (bean.getTrackingSession() != null && bean.getTrackingSession().getTrackingSessionId() > 0) {
+			model.setTrackingSession(TrackingSessionBean.prepareModel(bean.getTrackingSession()));
+		}
+
+		return model;
+	}
+
+	public static TrackingInventoryFinalBean prepareBean(TrackingInventoryFinalModel model) {
+		TrackingInventoryFinalBean bean = new TrackingInventoryFinalBean();
+		bean.setTrackingInventoryId(model.getTrackingInventoryId());
+
+		bean.setStatus(model.getStatus());
+		bean.setCreatedBy(model.getCreatedBy());
+		bean.setCreatedOn(model.getCreatedOn());
+		bean.setModifyBy(model.getModifyBy());
+		bean.setModifyOn(model.getModifyOn());
+		bean.setActive(model.getActive());
+		bean.setDeviceSerialNo(model.getDeviceSerialNo());
+		bean.setItemEpcId(model.getItemEpcId());
+		if (model.getCreatedOn() != null)
+			bean.setCreatedOnUtc(Common.getUtcFormat(model.getCreatedOn()));
+		if (model.getModifyOn() != null)
+			bean.setModifyOnUtc(Common.getUtcFormat(model.getModifyOn()));
+
+		if (model.getRawMaterialInward() != null) {
+			bean.setRawMaterialInward(RawMaterialInwardBean.prepareBean(model.getRawMaterialInward()));
+		}
+		if (model.getItemLocation() != null) {
+			bean.setItemLocation(ItemLocationBean.prepareBean(model.getItemLocation()));
+		}
+
+		if (model.getTrackingSession() != null) {
+			bean.setTrackingSession(TrackingSessionBean.prepareBean(model.getTrackingSession()));
+		}
+		return bean;
+	}
+
+	public static List<TrackingInventoryFinalBean> prepareListBean(List<TrackingInventoryFinalModel> listModel) {
+		List<TrackingInventoryFinalBean> beans = null;
+		if (listModel != null && !listModel.isEmpty()) {
+			beans = new ArrayList<TrackingInventoryFinalBean>();
+			for (TrackingInventoryFinalModel model : listModel) {
+				beans.add(prepareBean(model));
+			}
+		}
+		return beans;
+	}
+
+	public static List<TrackingInventoryFinalModel> prepareListModel(List<TrackingInventoryFinalBean> beans) {
+		List<TrackingInventoryFinalModel> listModel = null;
+		if (beans != null && !beans.isEmpty()) {
+			listModel = new ArrayList<TrackingInventoryFinalModel>();
+			for (TrackingInventoryFinalBean bean : beans) {
+				listModel.add(prepareModel(bean));
+			}
+		}
+		return listModel;
+	}
+}

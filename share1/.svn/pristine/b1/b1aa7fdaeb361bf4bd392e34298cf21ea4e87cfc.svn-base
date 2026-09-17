@@ -1,0 +1,84 @@
+package com.ecartes.dao;
+
+import java.util.List;
+import java.util.Date;
+
+import org.hibernate.Criteria;
+import org.hibernate.SQLQuery;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.ecartes.common.Common;
+import com.ecartes.model.TrackingInventoryFinalModel;
+import com.ecartes.model.TrackingInventoryModel;
+
+@Repository("trackingInventoryDAO")
+public class TrackingInventoryDAOImpl implements TrackingInventoryDAO {
+	@Autowired
+	private SessionFactory sessionFactory;
+
+	@Override
+	public void addTrackingInventory(TrackingInventoryModel trackingInventory) {
+		sessionFactory.getCurrentSession().saveOrUpdate(trackingInventory);
+	}
+
+	@Override
+	public List<TrackingInventoryModel> getListTrackingInventory() {
+		return (List<TrackingInventoryModel>) sessionFactory.getCurrentSession()
+				.createCriteria(TrackingInventoryModel.class).list();
+	}
+
+	@Override
+	public TrackingInventoryModel getTrackingInventory(Integer trackingInventoryId) {
+		return (TrackingInventoryModel) sessionFactory.getCurrentSession().get(TrackingInventoryModel.class,
+				trackingInventoryId);
+	}
+
+	@Override
+	public void deleteTrackingInventory(Integer trackingInventoryId) {
+		sessionFactory.getCurrentSession()
+				.createQuery("DELETE FROM trackinginventory WHERE trackingInventoryId=" + trackingInventoryId)
+				.executeUpdate();
+	}
+
+	@Override
+	public String getAssets(String itemEpcId) {
+		SQLQuery qry = sessionFactory.getCurrentSession().createSQLQuery(
+				" select top 1 itemCode from itemdetails where itemEpcId='" + itemEpcId + "' order by itemCode desc ");
+
+		List<String> list = (List<String>) qry.list();
+
+		if (list != null && list.size() > 0)
+			return list.get(0);
+		return null;
+	}
+
+	@Override
+	public List<TrackingInventoryFinalModel> getListInventory(TrackingInventoryFinalModel model) {
+
+		Date maxDate = null;
+		if (model.getModifyOn() != null)
+			maxDate = Common.getEndDate(model.getModifyOn());
+
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(TrackingInventoryFinalModel.class);
+
+		if (model.getTrackingSession() != null && model.getTrackingSession().getTrackingSessionId() != null
+				&& model.getTrackingSession().getTrackingSessionId() > 0) {
+			criteria.add(Restrictions.eq("trackingSession.trackingSessionId",
+					model.getTrackingSession().getTrackingSessionId()));
+		}
+
+		if (model.getStatus() != null && !model.getStatus().equalsIgnoreCase("0")) {
+			criteria.add(Restrictions.eq("status", model.getStatus()));
+		}
+
+		if (model.getCreatedOn() != null && model.getModifyOn() != null) {
+			criteria.add(Restrictions.between("modifyOn", model.getCreatedOn(), maxDate));
+		}
+
+		return (List<TrackingInventoryFinalModel>) criteria.list();
+	}
+
+}

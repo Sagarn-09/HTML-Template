@@ -1,0 +1,17 @@
+package com.ecartes.dao;
+import java.util.List;
+
+import com.ecartes.model.TrackingInventoryFinalModel;
+import com.ecartes.model.TrackingInventoryModel;
+
+public interface TrackingInventoryDAO 
+{
+public void addTrackingInventory(TrackingInventoryModel trackingInventory);
+public List<TrackingInventoryModel> getListTrackingInventory();
+public TrackingInventoryModel  getTrackingInventory(Integer trackingInventoryId);
+public void deleteTrackingInventory(Integer trackingInventoryId);
+
+public String getAssets(String itemEpcId);
+public List<TrackingInventoryFinalModel> getListInventory(TrackingInventoryFinalModel model);
+}
+

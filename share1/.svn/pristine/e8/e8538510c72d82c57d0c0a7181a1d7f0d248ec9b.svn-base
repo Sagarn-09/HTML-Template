@@ -1,0 +1,154 @@
+package com.ecartes.dao;
+
+import java.util.List;
+
+import org.hibernate.Criteria;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.ecartes.bean.ItemLocationBean;
+import com.ecartes.bean.ItemLocationSpaceBean;
+import com.ecartes.model.ItemLocationModel;
+import com.ecartes.model.ItemLocationSpaceModel;
+
+@Repository("itemLocationDAO")
+public class ItemLocationDAOImpl implements ItemLocationDAO {
+	@Autowired
+	private SessionFactory sessionFactory;
+
+	@Override
+	public void addItemLocation(ItemLocationModel itemLocation) {
+		sessionFactory.getCurrentSession().saveOrUpdate(itemLocation);
+	}
+
+	@Override
+	public List<ItemLocationModel> getListItemLocationAll() {
+
+		return (List<ItemLocationModel>) sessionFactory.getCurrentSession().createCriteria(ItemLocationModel.class)
+				.list();
+	}
+
+	@Override
+	public ItemLocationModel getItemLocation(Integer itemLocationId) {
+		return (ItemLocationModel) sessionFactory.getCurrentSession().get(ItemLocationModel.class, itemLocationId);
+	}
+
+	@Override
+	public void deleteItemLocation(Integer itemLocationId) {
+		sessionFactory.getCurrentSession()
+				.createQuery("DELETE FROM ItemLocation WHERE itemLocationId=" + itemLocationId).executeUpdate();
+	}
+
+	@Override
+	public List<ItemLocationModel> getListItemLocation(Integer itemParentLocationId) {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(ItemLocationModel.class);
+		criteria.add(Restrictions.isNull("itemLocationParent.itemLocationId"));
+		return (List<ItemLocationModel>) criteria.list();
+	}
+
+	@Override
+	public List<ItemLocationModel> getListItemLocationParent() {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(ItemLocationModel.class);
+		criteria.add(Restrictions.isNull("itemLocationParent.itemLocationId"));
+		return (List<ItemLocationModel>) criteria.list();
+	}
+
+	@Override
+	public List<ItemLocationModel> getListItemLocationParent(int itemParentLocationId) {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(ItemLocationModel.class);
+		criteria.add(Restrictions.eq("itemLocationParent.itemLocationId", itemParentLocationId));
+		return (List<ItemLocationModel>) criteria.list();
+	}
+
+	@Override
+	public List<ItemLocationModel> getListItemLocationOnly() {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(ItemLocationModel.class);
+		criteria.add(Restrictions.isNotNull("itemLocationParent.itemLocationId"));
+		return (List<ItemLocationModel>) criteria.list();
+	}
+
+	@Override
+	public ItemLocationModel getLocationByName(ItemLocationBean itemLocationBean) {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(ItemLocationModel.class);
+		criteria.add(Restrictions.eq("itemLocationName", itemLocationBean.getItemLocationName()));
+		
+		if (itemLocationBean.getItemLocationParent() != null
+				&& itemLocationBean.getItemLocationParent().getItemLocationId() != null)
+			criteria.add(Restrictions.eq("itemLocationParent.itemLocationId",
+					itemLocationBean.getItemLocationParent().getItemLocationId()));
+		List<ItemLocationModel> list = criteria.list();
+
+		if (list != null && list.size() > 0)
+			return list.get(list.size() - 1);
+		else
+			return null;
+	}
+
+//	@Override
+//	public ItemLocationModel getParentLocationByName(String itemLocationName) {
+//		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(ItemLocationModel.class);
+//				
+//		criteria.add(Restrictions.eq("itemLocationName", itemLocationName));
+//		criteria.add(Restrictions.isNull("itemLocationParent.itemLocationId"));
+//		return (ItemLocationModel) criteria.uniqueResult();
+//	}
+	
+	@Override
+	public ItemLocationModel getParentLocationByName(String itemLocationName) {
+		List<ItemLocationModel> list = (List<ItemLocationModel>) sessionFactory.getCurrentSession()
+				.createCriteria(ItemLocationModel.class)
+				.add(Restrictions.eq("itemLocationName", itemLocationName)).list();
+		if (list != null && list.size() > 0)
+			return list.get(list.size() - 1);
+		return null;
+	}
+
+	@Override
+	public List<ItemLocationModel> getListItemParent(Integer itemParentLocationId) {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(ItemLocationModel.class);
+		if (itemParentLocationId == null) {
+			criteria.add(Restrictions.isNull("itemLocationParent.itemLocationId"));
+		} else if (itemParentLocationId != null && itemParentLocationId > 0) {
+			criteria.add(Restrictions.eq("itemLocationId", itemParentLocationId));
+		}
+
+		return (List<ItemLocationModel>) criteria.list();
+	}
+
+	@Override
+	public List<ItemLocationModel> getListBranch(ItemLocationModel model) {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(ItemLocationModel.class);
+		if (model.getItemLocationId() != null) {
+			criteria.add(Restrictions.eq("itemLocationParent.itemLocationId", model.getItemLocationId()));
+		}
+		return (List<ItemLocationModel>) criteria.list();
+	}
+
+	@Override
+	public ItemLocationModel getLocationName(Integer itemLocationId) {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(ItemLocationModel.class);
+		if (itemLocationId != null && itemLocationId > 0) {
+			criteria.add(Restrictions.eq("itemLocationId", itemLocationId));
+		}
+		return (ItemLocationModel) criteria.uniqueResult();
+	}
+
+	@Override
+	public List<ItemLocationModel> getListLocationByFilter(ItemLocationBean itemLocationBean) {
+
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(ItemLocationModel.class);
+
+		if (itemLocationBean != null && itemLocationBean.getItemLocationId() != null
+				&& itemLocationBean.getItemLocationId() > 0) {
+
+			criteria.add(Restrictions.eq("itemLocationParent.itemLocationId", itemLocationBean.getItemLocationId()));
+		} else {
+			criteria.add(Restrictions.isNotNull("itemLocationParent.itemLocationId"));
+		}
+
+		return criteria.list();
+	}
+
+}

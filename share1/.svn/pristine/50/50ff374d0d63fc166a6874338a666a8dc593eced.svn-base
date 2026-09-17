@@ -1,0 +1,123 @@
+package com.ecartes.controller;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+
+import com.ecartes.bean.LoginBean;
+import com.ecartes.bean.TrackingSessionBean;
+import com.ecartes.service.TrackingSessionService;
+import com.ecartes.validator.TrackingSessionValidator;
+
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+@Controller
+public class TrackingSessionController {
+	SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+	SimpleDateFormat dateFormatSession = new SimpleDateFormat("hh-mm-dd-MM-yyyy");
+	@Autowired
+	TrackingSessionService trackingSessionService;
+	@Autowired
+	TrackingSessionValidator trackingSessionValidator;
+
+	@ModelAttribute
+	public void addingCommonObject(Model model, HttpServletRequest request) {
+
+	}
+
+	@InitBinder
+	public void InitBinder(WebDataBinder binder) {
+		binder.registerCustomEditor(Date.class, "startDate", new CustomDateEditor(dateFormat, true));
+		binder.registerCustomEditor(Date.class, "endDate", new CustomDateEditor(dateFormat, true));
+		binder.addValidators(trackingSessionValidator);
+	}
+
+	@RequestMapping(value = "/addTrackingSession", method = RequestMethod.GET)
+	public ModelAndView addTrackingSession(@ModelAttribute("command") TrackingSessionBean trackingSessionBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = new ModelAndView("pages/trackingSession/addtrackingSession");
+		LoginBean loginUser = (LoginBean) request.getSession().getAttribute("LOGGEDIN_USER");
+		trackingSessionBean
+				.setTrackingSessionName("" + dateFormatSession.format(new Date()) + "" + loginUser.getUserName());
+		trackingSessionBean.setStartDate(new Date());
+		trackingSessionBean.setActive(true);
+		modelAndView.addObject("trackingSessionBean", trackingSessionBean);
+		return modelAndView;
+
+	}
+
+	@RequestMapping(value = "/saveTrackingSession", method = RequestMethod.POST)
+	public ModelAndView saveTrackingSession(
+			@ModelAttribute("command") @Validated TrackingSessionBean trackingSessionBean, BindingResult result,
+			HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/trackingSession/addtrackingSession");
+			return modelAndView;
+		} else {
+			LoginBean loginUser = (LoginBean) request.getSession().getAttribute("LOGGEDIN_USER");
+			modelAndView = new ModelAndView("pages/trackingSession/displaytrackingSession");
+			trackingSessionBean.setCreatedOn(new Date());
+			trackingSessionBean.setModifyOn(new Date());
+			trackingSessionBean.setCreatedBy(loginUser.getLoginId());
+			trackingSessionBean.setModifyBy(loginUser.getLoginId());
+			System.out.print("trackingSessionBean" + trackingSessionBean.toString());
+
+			trackingSessionService.addTrackingSession(TrackingSessionBean.prepareModel(trackingSessionBean));
+
+			modelAndView.addObject("trackingSessionList",
+					TrackingSessionBean.prepareListBean(trackingSessionService.getListTrackingSession()));
+			modelAndView.addObject("trackingSessionBean", trackingSessionBean);
+			return modelAndView;
+		}
+
+	}
+
+	@RequestMapping(value = "/displayTrackingSession", method = RequestMethod.GET)
+	public ModelAndView displayTrackingSession(@ModelAttribute("command") TrackingSessionBean trackingSessionBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/trackingSession/displaytrackingSession");
+			return modelAndView;
+		} else {
+
+			modelAndView = new ModelAndView("pages/trackingSession/displaytrackingSession");
+			modelAndView.addObject("trackingSessionList",
+					TrackingSessionBean.prepareListBean(trackingSessionService.getListTrackingSession()));
+			modelAndView.addObject("trackingSessionBean", trackingSessionBean);
+			return modelAndView;
+		}
+
+	}
+
+	@RequestMapping(value = "/editTrackingSession", method = RequestMethod.GET)
+	public ModelAndView editTrackingSession(@ModelAttribute("command") TrackingSessionBean trackingSessionBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/trackingSession/addtrackingSession");
+			return modelAndView;
+		} else {
+			modelAndView = new ModelAndView("pages/trackingSession/addtrackingSession");
+			modelAndView.addObject("trackingSessionBean", TrackingSessionBean.prepareBean(
+					trackingSessionService.getTrackingSession(trackingSessionBean.getTrackingSessionId())));
+			return modelAndView;
+		}
+
+	}
+
+}

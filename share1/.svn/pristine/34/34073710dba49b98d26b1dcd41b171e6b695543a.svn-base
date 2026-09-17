@@ -1,0 +1,16 @@
+package com.ecartes.dao;
+import java.util.List;
+
+import com.ecartes.model.TrackingSessionModel;
+
+public interface TrackingSessionDAO 
+{
+public void addTrackingSession(TrackingSessionModel trackingSession);
+public List<TrackingSessionModel> getListTrackingSession();
+public TrackingSessionModel  getTrackingSession(Integer trackingSessionId);
+public TrackingSessionModel  getTrackingSessionCurrent();
+public void deleteTrackingSession(Integer trackingSessionId);
+public List<TrackingSessionModel> getCurrentSession(String sessionType);
+public List<TrackingSessionModel>  getTrackingSessionAllActive();
+}
+

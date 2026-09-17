@@ -1,0 +1,65 @@
+user.name.empty = Enter a Valid Name.
+user.email.empty = Enter a Valid Email ID.
+user.password.empty = Enter a Valid Password.
+user.mobile.empty = Enter a Valid Mobile No.
+user.role.empty = Please Select Role.
+user.input.length = Please enter value length greater than 0 and less than 5!
+user.email.length = Please enter email ID length greater than 0 and less than 50!
+user.email.invalid = Invalid email ID! Please enter valid email ID.
+user.userName.length = Please enter user name length greater than 0 and less than 50!
+user.password.length = Password must contains at least 8 or 20 characters!
+user.mobile.length = Please enter 10 digit Mobile No!
+user.password.matchUsername = Password must be different from Username!
+user.password.match = Password must contain at least 8 to 20 character, among them alphabetic (A-Z and a-z) and non-alphabetic characters (0-9 or special characters)!
+user.filed.length=Please enter value length grater than 0 and less than 50 
+user.invalid.data=Please enter text and number only.
+
+
+rolemenu.roleName.empty=Enter Role Name
+roleSequece.roleName.empty=Enter Role Sequence Number
+rolemenu.filed.length=Please enter value length grater than 0 and less than 30.
+
+
+menu.menuName.empty=Enter Menu Name
+menuName.filed.length=Please enter value length grater than 0 and less than 30.
+
+
+itemLocation.itemLocationName.empty = Enter a Building Name.
+itemLocation.itemLocationEpcId.empty = Enter a Location EPC ID.
+itemLocationName.filed.length = Please Building Name enter value length grater than 0 and less than 90.
+itemLocationEpcId.filed.length = Please Location EPC ID enter value length grater than 0 and less than 30.
+itemLocation.itemParentLocationId.select = Select a Location Type.
+
+itemLocation.itemLocationSpaceName.empty = Enter a Space Name.
+itemLocationSpaceName.filed.length = Please Space Name enter value length grater than 0 and less than 90.
+
+assetCategory.assetCategoryName.empty = Enter a Asset Category Name.
+assetCategory.description.empty = Enter a Asset Category Description.
+assetCategoryName.filed.length = Please Asset Category Name enter value length grater than 0 and less than 40.
+description.filed.length = Please Description enter value length grater than 0 and less than 90.
+
+trackingSessionId.filed.length = Select Session Type.
+trackingSession.trackingSessionName.empty = Enter Tracking Session Name.
+trackingSessionName.filed.length = Please Tracking Session Name enter value length grater than 0 and less than 40.
+trackingSessionName.startDate.empty = Select Tracking Session Start Date.
+trackingSessionName.sessionType.empty = Select Session Type.
+
+rawMaterialInward.assetUID.empty = Enter Asset UID Name.
+rawMaterialInward.assetTagToBeEncoded.empty = Enter Asset Tag to be Encoded.
+rawMaterialInward.typeOfTags.empty = Enter Type of Tags.
+rawMaterialInward.trade.empty = Enter Trade.
+assetUID.filed.length = Please Asset UID enter value length grater than 0 and less than 8.
+assetTagToBeEncoded.filed.length = Please Asset UID enter value length grater than 0 and less than 90.
+typeOfTags.filed.length = Please Asset UID enter value length grater than 0 and less than 28.
+trade.filed.length = Please Asset UID enter value length grater than 0 and less than 15.
+
+rawMaterialInward.assetCategoryId.empty = Select Sub-Type.
+rawMaterialInward.itemLocationId.empty = Select Building Name.
+rawMaterialInward.spaceLocationId.empty = Select Space Floor Name.
+
+report.reportType.empty=Enter report name.
+
+
+
+
+

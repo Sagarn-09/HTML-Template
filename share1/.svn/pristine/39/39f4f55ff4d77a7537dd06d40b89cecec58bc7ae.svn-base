@@ -1,0 +1,396 @@
+package com.ecartes.bean;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
+
+import com.ecartes.common.Common;
+import com.ecartes.model.LoginModel;
+import com.ecartes.model.ProcessTrackingFinalModel;
+
+public class ProcessTrackingFinalBean implements Serializable {
+	private static final long serialVersionUID = -723583058586873479L;
+	private Integer trackingInventoryId = 0;
+
+	public Integer getTrackingInventoryId() {
+		return trackingInventoryId;
+	}
+
+	public void setTrackingInventoryId(Integer trackingInventoryId) {
+		this.trackingInventoryId = trackingInventoryId;
+	}
+
+	private String itemEpcId = null;
+
+	public String getItemEpcId() {
+		return itemEpcId;
+	}
+
+	public void setItemEpcId(String itemEpcId) {
+		this.itemEpcId = itemEpcId;
+	}
+
+	private String assetTagToBeEncoded = null;
+
+	public String getAssetTagToBeEncoded() {
+		return assetTagToBeEncoded;
+	}
+
+	public void setAssetTagToBeEncoded(String assetTagToBeEncoded) {
+		this.assetTagToBeEncoded = assetTagToBeEncoded;
+	}
+
+	private String createdOnUtc = null;
+	private String modifyOnUtc = null;
+
+	public String getCreatedOnUtc() {
+		return createdOnUtc;
+	}
+
+	public void setCreatedOnUtc(String createdOnUtc) {
+		this.createdOnUtc = createdOnUtc;
+	}
+
+	public String getModifyOnUtc() {
+		return modifyOnUtc;
+	}
+
+	public void setModifyOnUtc(String modifyOnUtc) {
+		this.modifyOnUtc = modifyOnUtc;
+	}
+
+	private String useStatus = null;
+
+	public String getUseStatus() {
+		return useStatus;
+	}
+
+	public void setUseStatus(String useStatus) {
+		this.useStatus = useStatus;
+	}
+
+	private String deviceIP = null;
+
+	public String getDeviceIP() {
+		return deviceIP;
+	}
+
+	public void setDeviceIP(String deviceIP) {
+		this.deviceIP = deviceIP;
+	}
+
+	public RawMaterialInwardBean rawMaterialInward;
+
+	public RawMaterialInwardBean getRawMaterialInward() {
+		return rawMaterialInward;
+	}
+
+	public void setRawMaterialInward(RawMaterialInwardBean rawMaterialInward) {
+		this.rawMaterialInward = rawMaterialInward;
+	}
+
+	private Integer deviceId = 0;
+
+	public Integer getDeviceId() {
+		return deviceId;
+	}
+
+	public void setDeviceId(Integer deviceId) {
+		this.deviceId = deviceId;
+	}
+
+	private String status = null;
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	private Integer createdBy = null;
+	private Integer modifyBy = null;
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Integer getModifyBy() {
+		return modifyBy;
+	}
+
+	public void setModifyBy(Integer modifyBy) {
+		this.modifyBy = modifyBy;
+	}
+
+	private Date createdOn = null;
+
+	public Date getCreatedOn() {
+		return createdOn;
+	}
+
+	public void setCreatedOn(Date createdOn) {
+		this.createdOn = createdOn;
+	}
+
+	private Date modifyOn = null;
+
+	public Date getModifyOn() {
+		return modifyOn;
+	}
+
+	public void setModifyOn(Date modifyOn) {
+		this.modifyOn = modifyOn;
+	}
+
+	private Boolean active = false;
+
+	public Boolean getActive() {
+		return active;
+	}
+
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+
+	private Boolean successFlag = null;
+
+	public Boolean getSuccessFlag() {
+		return successFlag;
+	}
+
+	public void setSuccessFlag(Boolean successFlag) {
+		this.successFlag = successFlag;
+	}
+
+	private String message = null;
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	private String callingPage = null;
+
+	public String getCallingPage() {
+		return callingPage;
+	}
+
+	public void setCallingPage(String callingPage) {
+		this.callingPage = callingPage;
+	}
+
+	private String deviceSerialNo = null;
+
+	public String getDeviceSerialNo() {
+		return deviceSerialNo;
+	}
+
+	public void setDeviceSerialNo(String deviceSerialNo) {
+		this.deviceSerialNo = deviceSerialNo;
+	}
+
+	private String operation = null;
+
+	public String getOperation() {
+		return operation;
+	}
+
+	public void setOperation(String operation) {
+		this.operation = operation;
+	}
+
+	private Integer totalProcess = null;
+
+	public Integer getTotalProcess() {
+		return totalProcess;
+	}
+
+	public void setTotalProcess(Integer totalProcess) {
+		this.totalProcess = totalProcess;
+	}
+
+	private Date fromDate = null;
+	private Date toDate = null;
+
+	public Date getFromDate() {
+		return fromDate;
+	}
+
+	public void setFromDate(Date fromDate) {
+		this.fromDate = fromDate;
+	}
+
+	public Date getToDate() {
+		return toDate;
+	}
+
+	public void setToDate(Date toDate) {
+		this.toDate = toDate;
+	}
+
+	private TrackingSessionBean trackingSessionBean;
+
+	public TrackingSessionBean getTrackingSessionBean() {
+		return trackingSessionBean;
+	}
+
+	public void setTrackingSessionBean(TrackingSessionBean trackingSessionBean) {
+		this.trackingSessionBean = trackingSessionBean;
+	}
+
+	private String operationStatus = null;
+
+	public String getOperationStatus() {
+		return operationStatus;
+	}
+
+	public void setOperationStatus(String operationStatus) {
+		this.operationStatus = operationStatus;
+	}
+
+	private String userName = null;
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	private Integer itemLocationId = null;
+
+	public Integer getItemLocationId() {
+		return itemLocationId;
+	}
+
+	public void setItemLocationId(Integer itemLocationId) {
+		this.itemLocationId = itemLocationId;
+	}
+
+	private Integer scanFloorName = null;
+
+	public Integer getScanFloorName() {
+		return scanFloorName;
+	}
+
+	public void setScanFloorName(Integer scanFloorName) {
+		this.scanFloorName = scanFloorName;
+	}
+
+	private String scanSpaceName = null;
+
+	public String getScanSpaceName() {
+		return scanSpaceName;
+	}
+
+	public void setScanSpaceName(String scanSpaceName) {
+		this.scanSpaceName = scanSpaceName;
+	}
+
+	public static ProcessTrackingFinalModel prepareModel(ProcessTrackingFinalBean bean) {
+
+		ProcessTrackingFinalModel model = new ProcessTrackingFinalModel();
+		model.setTrackingInventoryId(bean.getTrackingInventoryId());
+		model.setStatus(bean.getStatus());
+		model.setCreatedBy(bean.getCreatedBy());
+		model.setCreatedOn(bean.getCreatedOn());
+		model.setModifyOn(bean.getModifyOn());
+		model.setActive(bean.getActive());
+		model.setDeviceSerialNo(bean.getDeviceSerialNo());
+		model.setItemEpcId(bean.getItemEpcId());
+		model.setAssetTagToBeEncoded(bean.getAssetTagToBeEncoded());
+		
+		if (bean.getCreatedBy() != null) {
+			LoginModel login = new LoginModel();
+			login.setLoginId(bean.getCreatedBy());
+			model.setModifyBy(login);
+		} else if (bean.getModifyBy() != null) {
+			LoginModel login = new LoginModel();
+			login.setLoginId(bean.getModifyBy());
+			model.setModifyBy(login);
+		}
+		if (bean.getTrackingSessionBean() != null) {
+			model.setTrackingSession(TrackingSessionBean.prepareModel(bean.getTrackingSessionBean()));
+		}
+		if (bean.getCreatedOnUtc() != null)
+			model.setCreatedOn(Common.getDateFromUtcFormat(bean.getCreatedOnUtc()));
+		if (bean.getModifyOnUtc() != null)
+			model.setModifyOn(Common.getDateFromUtcFormat(bean.getModifyOnUtc()));
+
+		if (bean.getRawMaterialInward() != null && bean.getRawMaterialInward().getRawMaterialInwardID() > 0) {
+			model.setRawMaterialInward(RawMaterialInwardBean.prepareModel(bean.getRawMaterialInward()));
+			
+			 
+		}
+		
+		model.setOperationStatus(bean.getOperationStatus());
+		model.setItemLocationId(bean.getItemLocationId());
+		return model;
+	}
+
+	public static ProcessTrackingFinalBean prepareBean(ProcessTrackingFinalModel model) {
+
+		ProcessTrackingFinalBean bean = new ProcessTrackingFinalBean();
+		bean.setTrackingInventoryId(model.getTrackingInventoryId());
+		bean.setStatus(model.getStatus());
+		bean.setCreatedBy(model.getCreatedBy());
+		bean.setCreatedOn(model.getCreatedOn());
+		if (model.getModifyBy() != null) {
+			bean.setModifyBy(model.getModifyBy().getLoginId());
+			bean.setUserName(model.getModifyBy().getUserName());
+		}
+		bean.setModifyOn(model.getModifyOn());
+		bean.setActive(model.getActive());
+		bean.setDeviceSerialNo(model.getDeviceSerialNo());
+		bean.setItemEpcId(model.getItemEpcId());
+		bean.setAssetTagToBeEncoded(model.getAssetTagToBeEncoded());
+		if (model.getCreatedOn() != null)
+			bean.setCreatedOnUtc(Common.getUtcFormat(model.getCreatedOn()));
+		if (model.getModifyOn() != null)
+			bean.setModifyOnUtc(Common.getUtcFormat(model.getModifyOn()));
+		if (model.getTrackingSession() != null) {
+			bean.setTrackingSessionBean(TrackingSessionBean.prepareBean(model.getTrackingSession()));
+		}
+
+		if (model.getRawMaterialInward() != null) {
+			bean.setRawMaterialInward(RawMaterialInwardBean.prepareBean(model.getRawMaterialInward()));
+		}
+		bean.setOperationStatus(model.getOperationStatus());
+		bean.setItemLocationId(model.getItemLocationId());
+		return bean;
+	}
+
+	public static List<ProcessTrackingFinalBean> prepareListBean(List<ProcessTrackingFinalModel> listModel) {
+		List<ProcessTrackingFinalBean> beans = null;
+
+		if (listModel != null && !listModel.isEmpty()) {
+			beans = new ArrayList<ProcessTrackingFinalBean>();
+			for (ProcessTrackingFinalModel model : listModel) {
+				beans.add(prepareBean(model));
+			}
+		}
+		return beans;
+	}
+
+	public static List<ProcessTrackingFinalModel> prepareListModel(List<ProcessTrackingFinalBean> beans) {
+		List<ProcessTrackingFinalModel> listModel = null;
+		if (beans != null && !beans.isEmpty()) {
+			listModel = new ArrayList<ProcessTrackingFinalModel>();
+			for (ProcessTrackingFinalBean bean : beans) {
+				listModel.add(prepareModel(bean));
+			}
+		}
+		return listModel;
+	}
+}
