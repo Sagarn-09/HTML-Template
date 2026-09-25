@@ -14,7 +14,8 @@
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
-	<listener>
+	
+	<!-- <listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>
 	<context-param>
@@ -24,7 +25,8 @@
 	<servlet-mapping>
 		<servlet-name>spring</servlet-name>
 		<url-pattern>*.web</url-pattern>
-	</servlet-mapping>
+	</servlet-mapping> -->
+	
 	<welcome-file-list>
 		<welcome-file>index.web</welcome-file>
 	</welcome-file-list>
