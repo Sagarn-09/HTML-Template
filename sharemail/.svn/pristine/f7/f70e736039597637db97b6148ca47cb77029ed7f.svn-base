@@ -1,0 +1,748 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+	pageEncoding="ISO-8859-1"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib uri="http://www.springframework.org/tags/form" prefix="form"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
+<%@ page import="org.owasp.encoder.Encode"%>
+<%@taglib prefix="e"
+	uri="https://www.owasp.org/index.php/OWASP_Java_Encoder_Project"%>
+<%@page import="java.text.DateFormat"%>
+<%@page import="java.util.*"%>
+<%@page import="java.text.SimpleDateFormat"%>
+<%@page import="java.util.Calendar"%>
+<%@ page import="com.ecartes.common.Common"%>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1.0, user-scalable=0">
+<meta name="description"
+	content="Ecartes provides comprehensive RFID solutions for efficient asset tracking and management.">
+<meta name="keywords"
+	content="RFID, tracking, inventory, technology, system, sensors, tags, readers, data, security">
+<meta name="author" content="Ecartes - RFID Asset Tracking">
+<meta name="robots" content="noindex, nofollow">
+<title>All Asset Master</title>
+
+<link rel="shortcut icon" type="image/x-icon"
+	href="<%=request.getContextPath()%>/resource/assets/img/favicon.png">
+
+<link rel="stylesheet"
+	href="<%=request.getContextPath()%>/resource/assets/css/bootstrap.min.css">
+
+<link rel="stylesheet"
+	href="<%=request.getContextPath()%>/resource/assets/css/bootstrap-datetimepicker.min.css">
+
+<link rel="stylesheet"
+	href="<%=request.getContextPath()%>/resource/assets/css/animate.css">
+
+<link rel="stylesheet"
+	href="<%=request.getContextPath()%>/resource/assets/css/bootstrap-datetimepicker.min.css">
+
+<link rel="stylesheet"
+	href="<%=request.getContextPath()%>/resource/assets/plugins/select2/css/select2.min.css">
+
+<link rel="stylesheet"
+	href="<%=request.getContextPath()%>/resource/assets/css/dataTables.bootstrap4.min.css">
+
+<link rel="stylesheet"
+	href="<%=request.getContextPath()%>/resource/assets/plugins/fontawesome/css/fontawesome.min.css">
+<link rel="stylesheet"
+	href="<%=request.getContextPath()%>/resource/assets/plugins/fontawesome/css/all.min.css">
+
+<link rel="stylesheet"
+	href="<%=request.getContextPath()%>/resource/assets/css/style.css">
+	
+<c:url var="spaceLog" value="/rfid/getspaceNameList.do" />
+
+<c:url var="floorLog" value="/rfid/getfloorNameList.do" />
+
+<script type="text/javascript">
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    function updateElement(elementId, selectedValue, optionText) {
+        if (selectedValue === 0 || selectedValue === null) {
+            var html = '<select id="' + elementId + 'Select" class="select" style="width: 100%; padding: .375rem 2.25rem .375rem .75rem; -moz-padding-start: calc(0.75rem - 3px); font-size: 1rem; font-weight: 400; line-height: 1.5; color: #212529; background-color: #fff; background-repeat: no-repeat; background-position: right .75rem center; background-size: 16px 12px; border: 1px solid #ced4da; border-radius: .25rem; transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out; -webkit-appearance: none; -moz-appearance: none; appearance: none" onchange="filter()">';
+            html += '<option value="0">' + optionText + '</option>';
+            html += '</select>';
+            document.getElementById(elementId).innerHTML = html;
+        }
+    }
+
+    var spaceSelectedValue = 0; 
+    var floorSelectedValue = 0; 
+
+    updateElement('spaceNameid', spaceSelectedValue, 'Select Space');
+    updateElement('floorNameid', floorSelectedValue, 'Select Floor');
+
+});
+
+	function filter() {
+		var selectedValue3 = document.getElementById("spaceFloorName").value;
+		document.getElementById("itemLocationIdSpace").value = selectedValue3;
+	}
+	
+	function showSelectedItemSpace(selectElement) {
+		
+		var selectedValue1 = document.getElementById("floorFloorName").value;				
+		document.getElementById("itemLocationIdFloor").value = selectedValue1;
+	
+		var selectedValue = selectElement.options[selectElement.selectedIndex].value;
+
+		if (selectedValue > 0) {
+
+			var selectedValue = selectElement.options[selectElement.selectedIndex].value;
+
+			urlCall = '${spaceLog}';
+			$.getJSON(
+				urlCall,
+				{
+					locationID : selectedValue,
+					ajax : 'true'
+				},
+				function(data) {
+
+					var html = '';
+
+					var len = data.length;
+
+					html += '<select id="spaceFloorName"   class="select"  style="width: 100%; padding: .375rem 2.25rem .375rem .75rem; -moz-padding-start: calc(0.75rem - 3px); font-size: 1rem; font-weight: 400; line-height: 1.5; color: #212529;  background-color: #fff; background-repeat: no-repeat; background-position: right .75rem center;  background-size: 16px 12px;  border: 1px solid #ced4da;   border-radius: .25rem;  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;  -webkit-appearance: none; -moz-appearance: none; appearance: none" onchange="filter()">';
+					html += '<option value="0">Select Space</option>';
+					for (var i = 0; i < len; i++) {
+						html += '<option value="'+data[i].itemLocationSpaceName+'">';
+						html += data[i].itemLocationSpaceName;
+						html += '</option>';
+					}
+
+					html += '</select>';
+
+					$('#spaceNameid').html(html);
+
+				});
+		}
+	}
+
+	function showSelectedItemFloor(selectElement) {
+		
+		document.getElementById("itemLocationIdSpace").value ='';
+		document.getElementById("itemLocationIdFloor").value ='';
+
+		var selectedValue = selectElement.options[selectElement.selectedIndex].value;
+		if (selectedValue > 0) {
+
+			var selectedValue = selectElement.options[selectElement.selectedIndex].value;
+
+			urlCall = '${floorLog}';
+			$.getJSON(
+					urlCall,
+					{
+						locationID : selectedValue,
+						ajax : 'true'
+					},
+					function(data) {
+
+						var html = '';
+
+						var len = data.length;
+
+						html += '<select id="floorFloorName"  style="width: 100%; padding: .375rem 2.25rem .375rem .75rem; -moz-padding-start: calc(0.75rem - 3px); font-size: 1rem; font-weight: 400; line-height: 1.5; color: #212529;  background-color: #fff; background-repeat: no-repeat; background-position: right .75rem center;  background-size: 16px 12px;  border: 1px solid #ced4da;   border-radius: .25rem;  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;  -webkit-appearance: none; -moz-appearance: none; appearance: none"    onchange="showSelectedItemSpace(this)"    >';
+						html += '<option value="0">Select Floor</option>';
+						for (var i = 0; i < len; i++) {
+							html += '<option value="'+data[i].itemLocationId+'">';
+							html += data[i].itemLocationName;
+							html += '</option>';
+						}
+
+						html += '</select>';
+
+						$('#floorNameid').html(html);
+						
+					});
+								
+		}
+	}
+</script>
+
+</head>
+
+<body>
+	<div id="global-loader">
+		<div class="whirly-loader"></div>
+	</div>
+
+	<div class="main-wrapper">
+
+		<div class="header">
+
+			<div class="header-left active">
+				<a href="${pageContext.request.contextPath}/homePage.do"
+					class="logo"> <img
+					src="<%=request.getContextPath()%>/resource/assets/img/logo.png"
+					alt="">
+				</a> <a href="${pageContext.request.contextPath}/homePage.do"
+					class="logo-small"> <img
+					src="<%=request.getContextPath()%>/resource/assets/img/logo-small.png"
+					alt="">
+				</a> <a id="toggle_btn" href="javascript:void(0);"> </a>
+			</div>
+
+			<a id="mobile_btn" class="mobile_btn" href="#sidebar"> <span
+				class="bar-icon"> <span></span> <span></span> <span></span>
+			</span>
+			</a>
+
+			<ul class="nav user-menu">
+
+				<li class="nav-item dropdown has-arrow main-drop"><a
+					href="javascript:void(0);" class="dropdown-toggle nav-link userset"
+					data-bs-toggle="dropdown"> <span class="user-img"><img
+							src="<%=request.getContextPath()%>/resource/assets/img/profiles/avator1.jpg"
+							alt=""> <span class="status online"></span></span>
+				</a>
+					<div class="dropdown-menu menu-drop-user">
+						<div class="profilename">
+							<div class="profileset">
+								<span class="user-img"><img
+									src="<%=request.getContextPath()%>/resource/assets/img/profiles/avator1.jpg"
+									alt=""> <span class="status online"></span></span>
+								<div class="profilesets">
+									<h6>${sessionScope.LOGGEDIN_USER.userName}</h6>
+								</div>
+							</div>
+							<hr class="m-0">
+							<a class="dropdown-item"
+								href="${pageContext.request.contextPath}/editLogin.do?loginId=${sessionScope.LOGGEDIN_USER.loginId}">
+								<i class="me-2" data-feather="user"></i> My Profile
+							</a>
+							<hr class="m-0">
+							<a class="dropdown-item logout pb-0"
+								href="${pageContext.request.contextPath}/logout.do"><img
+								src="<%=request.getContextPath()%>/resource/assets/img/icons/log-out.svg"
+								class="me-2" alt="img">Logout</a>
+						</div>
+					</div></li>
+			</ul>
+		</div>
+
+
+		<div class="sidebar" id="sidebar">
+			<div class="sidebar-inner slimscroll">
+				<div id="sidebar-menu" class="sidebar-menu">
+					<ul>
+						<li><a href="${pageContext.request.contextPath}/homePage.do"><img
+								src="<%=request.getContextPath()%>/resource/assets/img/icons/dashboard.svg"
+								alt="img"><span> Dashboard</span> </a></li>
+
+						<li class="submenu"><a href="javascript:void(0);"><img
+								src="<%=request.getContextPath()%>/resource/assets/img/icons/users1.svg"
+								alt="img"><span> Users Management</span> <span
+								class="menu-arrow"></span></a>
+							<ul>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('User') && sessionScope.menuMasteUser['User'].insertRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/addLogin.do">New
+											User </a></li>
+								</c:if>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('User') && sessionScope.menuMasteUser['User'].displayRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/displayLogin.do">Users
+											List</a></li>
+								</c:if>
+							</ul></li>
+						<li class="submenu"><a href="javascript:void(0);"><img
+								src="<%=request.getContextPath()%>/resource/assets/img/icons/role-user.svg"
+								alt="img"><span> Role Access</span> <span
+								class="menu-arrow"></span></a>
+							<ul>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Role Type') && sessionScope.menuMasteUser['Role Type'].insertRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/addRoleType.do">Add
+											Role</a></li>
+								</c:if>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Role Type') && sessionScope.menuMasteUser['Role Type'].displayRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/displayRoleType.do">Role
+											List</a></li>
+								</c:if>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Role Assign Type') && sessionScope.menuMasteUser['Role Assign Type'].insertRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/addRoleMenu.do">Role
+											Menu Access</a></li>
+								</c:if>
+							</ul></li>
+						<li class="submenu"><a href="javascript:void(0);"><img
+								src="<%=request.getContextPath()%>/resource/assets/img/icons/location.svg"
+								alt="img"><span> Location</span> <span class="menu-arrow"></span></a>
+							<ul>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Item Location') && sessionScope.menuMasteUser['Item Location'].insertRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/addItemLocationType.do">Add
+											Building</a></li>
+								</c:if>	
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Item Location') && sessionScope.menuMasteUser['Item Location'].displayRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/displayItemLocationType.do">Building
+											List</a></li>
+								</c:if>							
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Item Location') && sessionScope.menuMasteUser['Item Location'].insertRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/addItemLocation.do">Add
+											Floor</a></li>
+								</c:if>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Item Location') && sessionScope.menuMasteUser['Item Location'].displayRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/displayItemLocation.do">Floor
+											List</a></li>
+								</c:if>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Item Location') && sessionScope.menuMasteUser['Item Location'].insertRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/addItemLocationSpace.do">Add
+											Space </a></li>
+								</c:if>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Item Location') && sessionScope.menuMasteUser['Item Location'].displayRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/displayItemLocationSpace.do">Space
+											List</a></li>
+								</c:if>
+							</ul></li>
+						<li class="submenu"><a href="javascript:void(0);"><img
+								src="<%=request.getContextPath()%>/resource/assets/img/icons/category.svg"
+								alt="img"><span> Category</span> <span class="menu-arrow"></span></a>
+							<ul>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Asset Category') && sessionScope.menuMasteUser['Asset Category'].insertRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/addAssetCategory.do">Add
+											Category</a></li>
+								</c:if>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Asset Category') && sessionScope.menuMasteUser['Asset Category'].displayRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/displayAssetCategory.do">Category
+											List</a></li>
+								</c:if>
+							</ul></li>
+						<li class="submenu"><a href="javascript:void(0);"><img
+								src="<%=request.getContextPath()%>/resource/assets/img/icons/material.svg"
+								alt="img"><span> Asset</span> <span class="menu-arrow"></span></a>
+							<ul>
+
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Raw Material') && sessionScope.menuMasteUser['Raw Material'].insertRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/addRawMaterialInward.do">Add
+											Asset</a></li>
+								</c:if>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Raw Material') && sessionScope.menuMasteUser['Raw Material'].displayRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/displayRawMaterialInward.do">Asset
+											List</a></li>
+								</c:if>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Raw Material') && sessionScope.menuMasteUser['Raw Material'].insertRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/uploadMaterial.do">Asset
+											Excel Upload</a></li>
+								</c:if>
+							</ul></li>
+						<li class="submenu"><a href="javascript:void(0);"><img
+								src="<%=request.getContextPath()%>/resource/assets/img/icons/inventory.svg"
+								alt="img"><span> Inventory Session</span> <span
+								class="menu-arrow"></span></a>
+							<ul>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Tracking Session') && sessionScope.menuMasteUser['Tracking Session'].insertRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/addTrackingSession.do">Add
+											Tracking Session</a></li>
+								</c:if>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Tracking Session') && sessionScope.menuMasteUser['Tracking Session'].displayRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/displayTrackingSession.do">Tracking
+											Session List</a></li>
+								</c:if>
+							</ul></li>
+						<li class="submenu"><a href="javascript:void(0);"><img
+								src="<%=request.getContextPath()%>/resource/assets/img/icons/report.svg"
+								alt="img"><span> Report </span> <span class="menu-arrow"></span></a>
+							<ul>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Display Inventory') && sessionScope.menuMasteUser['Display Inventory'].displayRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/display_inventory.do">Asset
+											Found Inventory</a></li>
+									<li><a
+										href="${pageContext.request.contextPath}/display_not_inventory.do">Asset
+											Not Found Inventory</a></li>
+								</c:if>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('History') && sessionScope.menuMasteUser['History'].displayRecord=='true'}">
+									<li><a
+										href="${pageContext.request.contextPath}/trackingByAssetID.do">Asset
+											Scan History</a></li>
+								</c:if>
+								<c:if
+									test="${sessionScope.menuMasteUser.containsKey('Report') && sessionScope.menuMasteUser['Report'].displayRecord=='true'}">
+
+									<li><a
+										href="${pageContext.request.contextPath}/displayMaterialAllMaterial.do"
+										class="active">Asset Master</a></li>
+									<li><a
+										href="${pageContext.request.contextPath}/displayMaterialAllTagMaterial.do">Tagged
+											Asset</a></li>
+									<li><a
+										href="${pageContext.request.contextPath}/displayMaterialAllNotTagMaterial.do">UnTagged
+											Asset</a></li>
+											
+
+									<li><a
+										href="${pageContext.request.contextPath}/upcomingAmcDueDate.do">UpComing
+											AMC Due Date</a></li>
+
+									<li><a
+										href="${pageContext.request.contextPath}/amcDueDateExpired.do">
+											AMC Due Date Expired</a></li>
+											
+								</c:if>
+							</ul></li>
+
+						<li><a href="${pageContext.request.contextPath}/logout.do"><img
+								src="<%=request.getContextPath()%>/resource/assets/img/icons/log-out.svg"
+								alt="img"><span>Logout</span> </a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<form:form id='myform' method='POST'
+			action='<%=Encode
+						.forHtmlAttribute(((String) request.getContextPath()) + "/displayMaterialAllMaterial.do")%>'
+			role='form' class="form-horizontal">
+
+			<div class="page-wrapper">
+				<div class="content">
+					<div class="page-header">
+						<div class="page-title">
+							<h4>All Asset Master Lists</h4>
+						</div>
+					</div>
+
+					<div class="card">
+						<div class="card-body">
+							<div class="table-top">
+								<div class="search-set">
+									<div class="search-path">
+										<a class="btn btn-filter" id="filter_search"> <img
+											src="<%=request.getContextPath()%>/resource/assets/img/icons/filter.svg"
+											alt="img"> <span><img
+												src="<%=request.getContextPath()%>/resource/assets/img/icons/closes.svg"
+												alt="img"></span>
+										</a>
+									</div>
+									<div class="search-input">
+										<a class="btn btn-searchset"><img
+											src="<%=request.getContextPath()%>/resource/assets/img/icons/search-white.svg"
+											alt="img"></a>
+									</div>
+								</div>
+								<div class="wordset">
+									<ul>
+										<c:if test="${not empty epcPDFDownload}">
+											<li><a data-bs-toggle="tooltip" data-bs-placement="top"
+												title="pdf"
+												href='${pageContext.request.contextPath}/downloadExcelfile/<c:out value="${epcPDFDownload}"/>.do'>
+													<img
+													src="<%=request.getContextPath()%>/resource/assets/img/icons/pdf.svg"
+													alt="img">
+											</a></li>
+										</c:if>
+										<c:if test="${not empty epcExcelDownload}">
+											<li><a data-bs-toggle="tooltip" data-bs-placement="top"
+												title="excel"
+												href='${pageContext.request.contextPath}/downloadExcelfile/<c:out value="${epcExcelDownload}"/>.do'>
+													<img
+													src="<%=request.getContextPath()%>/resource/assets/img/icons/excel.svg"
+													alt="img">
+											</a></li>
+										</c:if>
+
+									</ul>
+								</div>
+							</div>
+
+							<div class="card" id="filter_inputs">
+								<div class="card-body pb-0">
+									<div class="row">
+										<div class="error">
+											<font color='red'> <form:errors path='*' />
+											</font>
+											<c:if test="${not empty successMessage}">
+												<font color='red'>${successMessage } </font>
+											</c:if>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-2 col-sm-6 col-12">
+											<div class="form-group">
+												<form:select id='operation' path="operation"
+													value='${rawMaterialInwardBean.operation}' class="select">
+													<option value="0">Select Type</option>
+													<option value="tagID"
+														${'tagID' == rawMaterialInwardBean.operation ? 'selected' : ''}>
+														TAG ID</option>
+													<option value="assetUID"
+														${'assetUID' == rawMaterialInwardBean.operation ? 'selected' : ''}>Asset
+														UID</option>
+												</form:select>
+											</div>
+										</div>
+										<div class="col-lg-2 col-sm-6 col-12">
+											<div class="form-group">
+												<form:input id='callingPage' path='callingPage' type="text"
+													autocomplete="off" placeholder="Enter Filled Value"
+													value='${rawMaterialInwardBean.callingPage}' />
+											</div>
+										</div>
+										<div class="col-lg-2 col-sm-6 col-12">
+											<div class="form-group">
+												<form:select id='assetCategoryId'
+													path="assetCategory.assetCategoryId"
+													value="${rawMaterialInwardBean.assetCategory.assetCategoryId}"
+													class="select">
+													<option value="0">Select Type</option>
+													<c:forEach items="${assetCategoryList}" var="assetCategory">
+														<option value="${assetCategory.assetCategoryId}"
+															${assetCategory.assetCategoryId == rawMaterialInwardBean.assetCategory.assetCategoryId ? 'selected' : ''}>${assetCategory.assetCategoryName}</option>
+													</c:forEach>
+												</form:select>
+											</div>
+										</div>
+										
+										<div class="col-lg-2 col-sm-6 col-12">
+											<fmt:formatDate pattern="dd-MM-yyyy"
+												value="${rawMaterialInwardBean.fromDate}" var="myDate" />
+											<div class="form-group">
+												<div class="input-groupicon">
+													<form:input id='fromDate' path='fromDate'
+														class="datetimepicker" type="text" autocomplete="off"
+														placeholder="From Date" value="${myDate }" />
+													<div class="addonset">
+														<img
+															src="<%=request.getContextPath()%>/resource/assets/img/icons/calendars.svg"
+															alt="img">
+													</div>
+												</div>
+											</div>
+										</div>
+
+										<div class="col-lg-2 col-sm-6 col-12">
+											<fmt:formatDate pattern="dd-MM-yyyy"
+												value="${rawMaterialInwardBean.toDate}" var="myDate" />
+											<div class="form-group">
+												<div class="input-groupicon">
+													<form:input id='toDate' path='toDate'
+														class="datetimepicker" type="text" autocomplete="off"
+														placeholder="To Date" value="${myDate }" />
+													<div class="addonset">
+														<img
+															src="<%=request.getContextPath()%>/resource/assets/img/icons/calendars.svg"
+															alt="img">
+													</div>
+												</div>
+											</div>
+										</div>
+
+									</div>
+
+									<div class="row">
+									
+									<div class="col-lg-2 col-sm-6 col-12">
+											<div class="form-group">
+												<form:select path="message"
+													value="${rawMaterialInwardBean.message}" class="select">
+													<option value="2"
+														${'2' == rawMaterialInwardBean.message ? 'selected' : ''}>All</option>
+													<option value="1"
+														${'1' == rawMaterialInwardBean.message ? 'selected' : ''}>Active</option>
+													<option value="0"
+														${'0' == rawMaterialInwardBean.message ? 'selected' : ''}>Disabled</option>
+
+												</form:select>
+											</div>
+										</div>
+																				
+										<div class="col-lg-2 col-sm-6 col-12">
+											<div class="form-group">
+		
+												<form:select id="itemLocationId"
+													path="binLocation.itemLocationId"
+													value="${rawMaterialInwardBean.binLocation.itemLocationId}"
+													class="select" onchange="showSelectedItemFloor(this)">
+													<option value="0">Select Building</option>
+													<c:forEach items="${buildingLocationList}" var="binLocation">
+														<option value="${binLocation.itemLocationId}"
+															${binLocation.itemLocationId == rawMaterialInwardBean.binLocation.itemLocationId ? 'selected' : ''}>
+															${binLocation.itemLocationName}</option>
+													</c:forEach>
+												</form:select>
+											</div>
+										</div>
+		
+										<div class="col-lg-2 col-sm-6 col-12">
+											<div class="form-group">
+								
+												<div id='floorNameid'>	</div>
+											
+											</div>
+										</div>
+		
+										<div class="col-lg-2 col-sm-6 col-12">
+											<div class="form-group">
+										
+												<div id='spaceNameid'></div>
+											
+											</div>
+										</div>
+										
+										<form:input id="itemLocationIdFloor"
+											path='scanLocation.itemLocationId'
+											value='${rawMaterialInwardBean.scanLocation.itemLocationId}' type='hidden' />
+											
+										<form:input id="itemLocationIdSpace"
+											path='scanSpaceFloorName'
+											value='${rawMaterialInwardBean.scanSpaceFloorName}' type='hidden' /> 
+										
+
+										<div class="col-lg-1 col-sm-6 col-12 ms-auto">
+											<div class="form-group">
+												<button class="btn btn-filters ms-auto" type="submit"
+													onclick='JavaScript:return validateForm();'>
+													<img
+														src="<%=request.getContextPath()%>/resource/assets/img/icons/search-whites.svg"
+														alt="img">
+												</button>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="table-responsive">
+								<table class="table  datanew">
+									<thead>
+										<tr>
+											<th>Sr. No</th>
+											<th>Asset Tag to be Encoded</th>
+											<th>Last Scan Building</th>
+											<th>Last Scan Floor</th>
+											<th>Last Scan Space</th>
+											<th>Scan Building</th>
+											<th>Scan Floor</th>
+											<th>Scan Space</th>
+											<th>Trade</th>
+											<th>Sub Type</th>
+											<th>Asset UID</th>
+											<th>Type of Tags</th>
+											<th>Verified on site</th>
+											<th>Modify By</th>
+											<th>Modify Date</th>
+											<th>Status</th>
+										</tr>
+									</thead>
+									<tbody>
+										<c:forEach items="${rawMaterialInwardList}" var="item"
+											varStatus="loop">
+											<c:set var="rawMaterialInwardID"
+												value="${item.rawMaterialInwardID}" />
+											<tr>
+												<td>${loop.index+1}</td>
+												<td>${e:forHtml(item.assetTagToBeEncoded)}</td>
+												<td>${e:forHtml(item.binLocation.itemLocationParent.itemLocationName)}</td>
+												<td>${e:forHtml(item.binLocation.itemLocationName)}</td>
+												<td>${e:forHtml(item.spaceFloorName)}</td>
+												<td>${e:forHtml(item.scanLocation.itemLocationParent.itemLocationName)}</td>
+												<td>${e:forHtml(item.scanLocation.itemLocationName)}</td>
+												<td>${e:forHtml(item.scanSpaceFloorName)}</td>
+												<td>${e:forHtml(item.trade)}</td>
+												<td>${e:forHtml(item.assetCategory.assetCategoryName)}</td>
+												<td>${e:forHtml(item.assetUID)}</td>
+												<td>${e:forHtml(item.typeOfTags)}</td>
+												<td>${e:forHtml(item.verifiedOnSite == 'true' ? 'Yes' : 'No')}</td>
+												<td>${e:forHtml(item.userName)}</td>
+												<td><fmt:formatDate pattern="dd-MMM-YYYY"
+														value="${item.modifyOn}" var="myDate" /> ${myDate}</td>
+												<td>${item.active == 'true' ? 'Active' : 'Disable'}</td>
+
+											</tr>
+										</c:forEach>
+									</tbody>
+								</table>
+							</div>
+
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</form:form>
+	</div>
+	<input type="hidden" name="${_csrf.parameterName}"
+		value="${_csrf.token}" />
+	<script
+		src="<%=request.getContextPath()%>/resource/assets/js/jquery-3.6.0.min.js"></script>
+
+	<script
+		src="<%=request.getContextPath()%>/resource/assets/js/feather.min.js"></script>
+
+	<script
+		src="<%=request.getContextPath()%>/resource/assets/js/jquery.slimscroll.min.js"></script>
+
+	<script
+		src="<%=request.getContextPath()%>/resource/assets/js/jquery.dataTables.min.js"></script>
+	<script
+		src="<%=request.getContextPath()%>/resource/assets/js/dataTables.bootstrap4.min.js"></script>
+
+	<script
+		src="<%=request.getContextPath()%>/resource/assets/js/bootstrap.bundle.min.js"></script>
+
+	<script
+		src="<%=request.getContextPath()%>/resource/assets/js/moment.min.js"></script>
+	<script
+		src="<%=request.getContextPath()%>/resource/assets/js/bootstrap-datetimepicker.min.js"></script>
+
+	<script
+		src="<%=request.getContextPath()%>/resource/assets/plugins/select2/js/select2.min.js"></script>
+
+	<script
+		src="<%=request.getContextPath()%>/resource/assets/js/moment.min.js"></script>
+	<script
+		src="<%=request.getContextPath()%>/resource/assets/js/bootstrap-datetimepicker.min.js"></script>
+
+	<script
+		src="<%=request.getContextPath()%>/resource/assets/plugins/sweetalert/sweetalert2.all.min.js"></script>
+	<script
+		src="<%=request.getContextPath()%>/resource/assets/plugins/sweetalert/sweetalerts.min.js"></script>
+
+	<script
+		src="<%=request.getContextPath()%>/resource/assets/js/script.js"></script>
+</body>
+
+</html>

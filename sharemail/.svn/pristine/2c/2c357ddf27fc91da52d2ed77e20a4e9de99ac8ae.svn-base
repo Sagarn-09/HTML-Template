@@ -1,0 +1,147 @@
+package com.ecartes.model;
+import java.io.Serializable;
+import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+@Entity
+@Table(name="MaterialOutwardEntry")
+public class MaterialOutwardEntryModel implements Serializable
+{
+private static final long serialVersionUID = -723583058586873479L;
+@Id
+@GeneratedValue(strategy=GenerationType.AUTO)
+@Column(name = "rawMaterialOutwardID")
+private Integer rawMaterialOutwardID=null;
+public Integer getRawMaterialOutwardID()
+{
+ return rawMaterialOutwardID;
+}
+public void  setRawMaterialOutwardID(Integer rawMaterialOutwardID)
+{
+ this.rawMaterialOutwardID=rawMaterialOutwardID;
+}
+
+@ManyToOne
+@JoinColumn(name="rawMaterialInwardID")
+RawMaterialInwardModel rawMaterialInwardModel=null;
+
+
+
+public RawMaterialInwardModel getRawMaterialInwardModel() {
+	return rawMaterialInwardModel;
+}
+public void setRawMaterialInwardModel(RawMaterialInwardModel rawMaterialInwardModel) {
+	this.rawMaterialInwardModel = rawMaterialInwardModel;
+}
+
+@Column(name = "qty")
+private String  qty=null;
+
+public String getQty() {
+	return qty;
+}
+public void setQty(String qty) {
+	this.qty = qty;
+}
+
+@Temporal(TemporalType.DATE)@Column(name = "entryDate", updatable=true)
+private Date  entryDate=null;
+public Date getEntryDate()
+{
+ return entryDate;
+}
+public void  setEntryDate(Date entryDate)
+{
+ this.entryDate=entryDate;
+}
+@Column(name = "status")
+private String  status=null;
+public String getStatus()
+{
+ return status;
+}
+public void  setStatus(String status)
+{
+ this.status=status;
+}
+@Column(name = "active")
+private Boolean  active=false;
+public Boolean getActive()
+{
+ return active;
+}
+public void  setActive(Boolean active)
+{
+ this.active=active;
+}
+@Column(name = "createdBy")
+private Integer createdBy=0;
+public Integer getCreatedBy()
+{
+ return createdBy;
+}
+public void  setCreatedBy(Integer createdBy)
+{
+ this.createdBy=createdBy;
+}
+@Column(name = "createdOn", updatable=true)
+private Date  createdOn=null;
+public Date getCreatedOn()
+{
+ return createdOn;
+}
+public void  setCreatedOn(Date createdOn)
+{
+ this.createdOn=createdOn;
+}
+
+@ManyToOne
+@JoinColumn(name="modifyBy",updatable=false)
+private LoginModel modifyBy=null;
+public LoginModel getModifyBy()
+{
+ return modifyBy;
+}
+public void  setModifyBy(LoginModel modifyBy)
+{
+ this.modifyBy=modifyBy;
+}
+@Column(name = "modifyOn", updatable=true)
+private Date  modifyOn=null;
+public Date getModifyOn()
+{
+ return modifyOn;
+}
+public void  setModifyOn(Date modifyOn)
+{
+ this.modifyOn=modifyOn;
+}
+private String  qtyAvailable=null;
+
+
+@Column(name = "qtyAvailable")
+public String getQtyAvailable() {
+	return qtyAvailable;
+}
+public void setQtyAvailable(String qtyAvailable) {
+	this.qtyAvailable = qtyAvailable;
+}
+@Column(name = "refNumber")
+private String refNumber=null;
+
+public String getRefNumber() {
+	return refNumber;
+}
+public void setRefNumber(String refNumber) {
+	this.refNumber = refNumber;
+}
+
+}

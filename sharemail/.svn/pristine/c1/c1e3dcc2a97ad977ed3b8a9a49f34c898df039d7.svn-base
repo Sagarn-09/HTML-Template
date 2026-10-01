@@ -1,0 +1,23 @@
+package com.ecartes.service;
+
+import java.util.List;
+
+import com.ecartes.model.LoginModel;
+
+public interface LoginService {
+	public void addLogin(LoginModel login);
+
+	public List<LoginModel> getListLogin(String userType);
+
+	public LoginModel getLogin(Integer loginId);
+
+	public void deleteLogin(Integer loginId);
+
+	public LoginModel getLogin(String userLoginId, String password);
+
+	public LoginModel cheIdExitLogin(String userLoginId);
+
+	public List<LoginModel> userEmailList();
+
+	public List<String> getEmailList();
+}

@@ -1,0 +1,67 @@
+package com.ecartes.dao;
+
+import java.util.List;
+
+import org.hibernate.Criteria;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.ecartes.bean.AssetCategoryBean;
+import com.ecartes.model.AssetCategoryModel;
+
+@Repository("assetCategoryDAO")
+public class AssetCategoryDAOImpl implements AssetCategoryDAO {
+	@Autowired
+	private SessionFactory sessionFactory;
+
+	@Override
+	public void addAssetCategory(AssetCategoryModel assetCategory) {
+		sessionFactory.getCurrentSession().saveOrUpdate(assetCategory);
+	}
+	
+	@Override
+	public List<AssetCategoryModel> getListAssetCategoryOnly() {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(AssetCategoryModel.class);
+		criteria.add(Restrictions.isNotNull("assetCategory.assetCategoryId"));
+		return (List<AssetCategoryModel>) criteria.list();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AssetCategoryModel> getListAssetCategory() {
+		return (List<AssetCategoryModel>) sessionFactory.getCurrentSession().createCriteria(AssetCategoryModel.class)
+				.list();
+	}
+
+	@Override
+	public AssetCategoryModel getAssetCategory(Integer assetCategoryId) {
+		return (AssetCategoryModel) sessionFactory.getCurrentSession().get(AssetCategoryModel.class, assetCategoryId);
+	}
+
+	@Override
+	public void deleteAssetCategory(Integer assetCategoryId) {
+		sessionFactory.getCurrentSession()
+				.createQuery("DELETE FROM assetcategory WHERE assetCategoryId=" + assetCategoryId).executeUpdate();
+	}
+
+	@Override
+	public AssetCategoryModel getAssetCategoryByName(AssetCategoryBean assetCategoryBean) {
+		if (assetCategoryBean != null && assetCategoryBean.getAssetCategoryName() != null
+				&& assetCategoryBean.getAssetCategoryName().length() > 0) {
+			Criteria criteria = sessionFactory.getCurrentSession().createCriteria(AssetCategoryModel.class);
+			criteria.add(Restrictions.eq("assetCategoryName", assetCategoryBean.getAssetCategoryName()));
+			return (AssetCategoryModel) criteria.uniqueResult();
+		}
+		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AssetCategoryModel> getListAssetParentCategory() {
+		return (List<AssetCategoryModel>) sessionFactory.getCurrentSession().createCriteria(AssetCategoryModel.class)
+				.add(Restrictions.isNull("assetCategory.assetCategoryId")).list();
+	}
+
+}

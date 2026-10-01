@@ -1,0 +1,447 @@
+package com.ecartes.bean;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
+
+import java.util.ArrayList;
+
+import com.ecartes.model.LoginModel;
+import com.ecartes.model.RawMaterialInwardModel;
+import com.ecartes.model.RawMaterialInwardModelHistory;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public class RawMaterialInwardBean implements Serializable {
+	private static final long serialVersionUID = -723583058586873479L;
+	private Integer rawMaterialInwardID = null;
+	private String tagID = null;
+	private String assetTagToBeEncoded = null;
+	private String assetUID = null;
+	private String trade = null;
+	private String typeOfTags = null;
+	private AssetCategoryBean assetCategory = null;
+	private ItemLocationBean scanLocation = null;
+	private ItemLocationBean binLocation = null;
+	private CommonsMultipartFile materialExcelPath = null;
+	private Boolean verifiedOnSite = false;
+	private Boolean active = false;
+	private Integer createdBy = 0;
+	private Date createdOn = null;
+	private Integer modifyBy = 0;
+	private Date modifyOn = null;
+	private Boolean successFlag = null;
+	private String message = null;
+	private String callingPage = null;
+	private String operation = null;
+	private Date fromDate = null;
+	private Date toDate = null;
+	private String userName = null;
+
+	private RawMaterialInwardBean assetAccessories = null;
+	private String assetName = null;
+
+	private String description = null;
+
+	private Date amcDueDate = null;
+
+	private String srNo = null;
+	
+	@JsonProperty("AssetCategoryId")
+	private Integer assetCategoryId;
+
+	public Integer getAssetCategoryId() {
+		return assetCategoryId;
+	}
+
+	public void setAssetCategoryId(Integer assetCategoryId) {
+		this.assetCategoryId = assetCategoryId;
+	}
+
+	public String getSrNo() {
+		return srNo;
+	}
+
+	public void setSrNo(String srNo) {
+		this.srNo = srNo;
+	}
+
+	public String getAssetName() {
+		return assetName;
+	}
+
+	public void setAssetName(String assetName) {
+		this.assetName = assetName;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public Date getAmcDueDate() {
+		return amcDueDate;
+	}
+
+	public void setAmcDueDate(Date amcDueDate) {
+		this.amcDueDate = amcDueDate;
+	}
+
+	private Integer parentLocationId = null;
+
+	public Integer getParentLocationId() {
+		return parentLocationId;
+	}
+
+	public void setParentLocationId(Integer parentLocationId) {
+		this.parentLocationId = parentLocationId;
+	}
+
+	private String scanSpaceFloorName = null;
+
+	public String getScanSpaceFloorName() {
+		return scanSpaceFloorName;
+	}
+
+	public void setScanSpaceFloorName(String scanSpaceFloorName) {
+		this.scanSpaceFloorName = scanSpaceFloorName;
+	}
+
+	private String spaceFloorName = null;
+
+	public String getSpaceFloorName() {
+		return spaceFloorName;
+	}
+
+	public void setSpaceFloorName(String spaceFloorName) {
+		this.spaceFloorName = spaceFloorName;
+	}
+
+	public Integer getRawMaterialInwardID() {
+		return rawMaterialInwardID;
+	}
+
+	public void setRawMaterialInwardID(Integer rawMaterialInwardID) {
+		this.rawMaterialInwardID = rawMaterialInwardID;
+	}
+
+	public String getAssetTagToBeEncoded() {
+		return assetTagToBeEncoded;
+	}
+
+	public void setAssetTagToBeEncoded(String assetTagToBeEncoded) {
+		this.assetTagToBeEncoded = assetTagToBeEncoded;
+	}
+
+	public String getAssetUID() {
+		return assetUID;
+	}
+
+	public void setAssetUID(String assetUID) {
+		if (assetUID != null) {
+			assetUID = assetUID.replaceAll("\\s+", " ");
+			assetUID = assetUID.trim();
+		}
+		this.assetUID = assetUID;
+	}
+
+	public String getTrade() {
+		return trade;
+	}
+
+	public void setTrade(String trade) {
+		this.trade = trade;
+	}
+
+	public String getTypeOfTags() {
+		return typeOfTags;
+	}
+
+	public void setTypeOfTags(String typeOfTags) {
+		this.typeOfTags = typeOfTags;
+	}
+
+	public CommonsMultipartFile getMaterialExcelPath() {
+		return materialExcelPath;
+	}
+
+	public void setMaterialExcelPath(CommonsMultipartFile materialExcelPath) {
+		this.materialExcelPath = materialExcelPath;
+	}
+
+	public ItemLocationBean getScanLocation() {
+		return scanLocation;
+	}
+
+	public void setScanLocation(ItemLocationBean scanLocation) {
+		this.scanLocation = scanLocation;
+	}
+
+	public ItemLocationBean getBinLocation() {
+		return binLocation;
+	}
+
+	public void setBinLocation(ItemLocationBean binLocation) {
+		this.binLocation = binLocation;
+	}
+
+	public AssetCategoryBean getAssetCategory() {
+		return assetCategory;
+	}
+
+	public void setAssetCategory(AssetCategoryBean assetCategory) {
+		this.assetCategory = assetCategory;
+	}
+
+	public String getTagID() {
+		return tagID;
+	}
+
+	public void setTagID(String tagID) {
+		this.tagID = tagID;
+	}
+
+	public Boolean getVerifiedOnSite() {
+		return verifiedOnSite;
+	}
+
+	public void setVerifiedOnSite(Boolean verifiedOnSite) {
+		this.verifiedOnSite = verifiedOnSite;
+	}
+
+	public Boolean getActive() {
+		return active;
+	}
+
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Date getCreatedOn() {
+		return createdOn;
+	}
+
+	public void setCreatedOn(Date createdOn) {
+		this.createdOn = createdOn;
+	}
+
+	public Integer getModifyBy() {
+		return modifyBy;
+	}
+
+	public void setModifyBy(Integer modifyBy) {
+		this.modifyBy = modifyBy;
+	}
+
+	public Date getModifyOn() {
+		return modifyOn;
+	}
+
+	public void setModifyOn(Date modifyOn) {
+		this.modifyOn = modifyOn;
+	}
+
+	public Boolean getSuccessFlag() {
+		return successFlag;
+	}
+
+	public void setSuccessFlag(Boolean successFlag) {
+		this.successFlag = successFlag;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	public String getCallingPage() {
+		return callingPage;
+	}
+
+	public void setCallingPage(String callingPage) {
+		this.callingPage = callingPage;
+	}
+
+	public String getOperation() {
+		return operation;
+	}
+
+	public void setOperation(String operation) {
+		this.operation = operation;
+	}
+
+	public Date getFromDate() {
+		return fromDate;
+	}
+
+	public void setFromDate(Date fromDate) {
+		this.fromDate = fromDate;
+	}
+
+	public Date getToDate() {
+		return toDate;
+	}
+
+	public void setToDate(Date toDate) {
+		this.toDate = toDate;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public RawMaterialInwardBean getAssetAccessories() {
+		return assetAccessories;
+	}
+
+	public void setAssetAccessories(RawMaterialInwardBean assetAccessories) {
+		this.assetAccessories = assetAccessories;
+	}
+
+	public static RawMaterialInwardModel prepareModel(RawMaterialInwardBean bean) {
+		RawMaterialInwardModel model = new RawMaterialInwardModel();
+		model.setRawMaterialInwardID(bean.getRawMaterialInwardID());
+		model.setAssetTagToBeEncoded(bean.getAssetTagToBeEncoded());
+		model.setSrNo(bean.getSrNo());
+	model.setAssetUID(bean.getAssetUID());
+		model.setTrade(bean.getTrade());
+		model.setScanSpaceFloorName(bean.getScanSpaceFloorName());
+		model.setTypeOfTags(bean.getTypeOfTags());
+
+		if (bean.getSpaceFloorName() != null)
+			model.setSpaceFloorName(bean.getSpaceFloorName());
+
+		if (bean.getBinLocation() != null)
+			model.setBinLocation(ItemLocationBean.prepareModel(bean.getBinLocation()));
+
+		if (bean.getScanLocation() != null)
+			model.setScanLocation(ItemLocationBean.prepareModel(bean.getScanLocation()));
+		model.setTagID(bean.getTagID());
+		model.setActive(bean.getActive());
+		model.setVerifiedOnSite(bean.getVerifiedOnSite());
+		model.setCreatedBy(bean.getCreatedBy());
+		model.setCreatedOn(bean.getCreatedOn());
+		model.setAssetName(bean.getAssetName());
+		model.setDescription(bean.getDescription());
+		model.setAmcDueDate(bean.getAmcDueDate());
+		if (bean.getModifyBy() != null && bean.getModifyBy() > 0) {
+			LoginModel loginModel = new LoginModel();
+			loginModel.setLoginId(bean.getModifyBy());
+			model.setModifyBy(loginModel);
+		}
+		model.setModifyOn(bean.getModifyOn());
+		if (bean.getAssetCategory() != null)
+			model.setAssetCategory(AssetCategoryBean.prepareModel(bean.getAssetCategory()));
+		model.setParentLocationId(bean.getParentLocationId());
+		return model;
+	}
+
+	public static RawMaterialInwardModelHistory prepareModelHistory(RawMaterialInwardBean bean) {
+		RawMaterialInwardModelHistory model = new RawMaterialInwardModelHistory();
+
+		if (bean.getBinLocation() != null)
+			model.setBinLocation(ItemLocationBean.prepareModel(bean.getBinLocation()));
+
+		if (bean.getScanLocation() != null)
+			model.setScanLocation(ItemLocationBean.prepareModel(bean.getScanLocation()));
+		model.setTagID(bean.getTagID());
+
+		model.setActive(bean.getActive());
+		model.setCreatedBy(bean.getCreatedBy());
+		model.setCreatedOn(bean.getCreatedOn());
+		if (bean.getModifyBy() != null && bean.getModifyBy() > 0) {
+			LoginModel loginModel = new LoginModel();
+			loginModel.setLoginId(bean.getModifyBy());
+			model.setModifyBy(loginModel);
+		}
+		model.setModifyOn(bean.getModifyOn());
+		if (bean.getAssetCategory() != null)
+			model.setAssetCategory(AssetCategoryBean.prepareModel(bean.getAssetCategory()));
+		if (bean.getAssetAccessories() != null)
+			model.setAssetAccessories(RawMaterialInwardBean.prepareModel(bean.getAssetAccessories()));
+		return model;
+	}
+
+	public static RawMaterialInwardBean prepareBean(RawMaterialInwardModel model) {
+		RawMaterialInwardBean bean = new RawMaterialInwardBean();
+		if (model == null)
+			return null;
+		bean.setRawMaterialInwardID(model.getRawMaterialInwardID());
+
+		bean.setAssetUID(model.getAssetUID());
+		bean.setSrNo(model.getSrNo());
+		bean.setAssetTagToBeEncoded(model.getAssetTagToBeEncoded());
+		bean.setTrade(model.getTrade());
+		bean.setScanSpaceFloorName(model.getScanSpaceFloorName());
+		bean.setTypeOfTags(model.getTypeOfTags());
+		
+
+		if (model.getSpaceFloorName() != null)
+			bean.setSpaceFloorName(model.getSpaceFloorName());
+
+		if (model.getBinLocation() != null)
+			bean.setBinLocation(ItemLocationBean.prepareBean(model.getBinLocation()));
+
+		if (model.getScanLocation() != null)
+			bean.setScanLocation(ItemLocationBean.prepareBean(model.getScanLocation()));
+
+		bean.setTagID(model.getTagID());
+		bean.setActive(model.getActive());
+		bean.setVerifiedOnSite(model.getVerifiedOnSite());
+		bean.setCreatedBy(model.getCreatedBy());
+		bean.setCreatedOn(model.getCreatedOn());
+		bean.setAssetName(model.getAssetName());
+		bean.setDescription(model.getDescription());
+		bean.setAmcDueDate(model.getAmcDueDate());
+		if (model.getModifyBy() != null && model.getModifyBy().getLoginId() != null) {
+			bean.setModifyBy(model.getModifyBy().getLoginId());
+			bean.setUserName(model.getModifyBy().getUserName());
+		}
+		bean.setModifyOn(model.getModifyOn());
+		if (model.getAssetCategory() != null)
+			bean.setAssetCategory(AssetCategoryBean.prepareBean(model.getAssetCategory()));
+		bean.setParentLocationId(model.getParentLocationId());
+		System.out.println("bean.getSrNo() +bean.getAssetName()+bean.getAmcDueDate()" +bean.getSrNo() +bean.getAssetName()+bean.getAmcDueDate());
+		return bean;
+	}
+
+	public static List<RawMaterialInwardBean> prepareListBean(List<RawMaterialInwardModel> listModel) {
+		List<RawMaterialInwardBean> beans = null;
+		if (listModel != null && !listModel.isEmpty()) {
+			beans = new ArrayList<RawMaterialInwardBean>();
+			for (RawMaterialInwardModel model : listModel) {
+				beans.add(prepareBean(model));
+			}
+		}
+		return beans;
+	}
+
+	public static List<RawMaterialInwardModel> prepareListModel(List<RawMaterialInwardBean> beans) {
+		List<RawMaterialInwardModel> listModel = null;
+		if (beans != null && !beans.isEmpty()) {
+			listModel = new ArrayList<RawMaterialInwardModel>();
+			for (RawMaterialInwardBean bean : beans) {
+				listModel.add(prepareModel(bean));
+			}
+		}
+		return listModel;
+	}
+}

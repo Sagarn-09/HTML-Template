@@ -1,0 +1,57 @@
+package com.ecartes.service;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.ecartes.dao.TrackingInventoryDAO;
+import com.ecartes.model.TrackingInventoryFinalModel;
+import com.ecartes.model.TrackingInventoryModel;
+
+@Service("trackingInventoryService")
+@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+public class TrackingInventoryServiceImpl implements TrackingInventoryService 
+{
+@Autowired
+private TrackingInventoryDAO trackingInventoryDao;
+@Transactional(propagation = Propagation.REQUIRED, readOnly = false)
+public void addTrackingInventory(TrackingInventoryModel trackingInventory)
+{
+trackingInventoryDao.addTrackingInventory(trackingInventory);
+}
+@Override
+public List<TrackingInventoryModel> getListTrackingInventory()
+{
+
+return trackingInventoryDao.getListTrackingInventory();
+}
+
+@Override
+public TrackingInventoryModel  getTrackingInventory(Integer trackingInventoryId)
+{
+return trackingInventoryDao.getTrackingInventory( trackingInventoryId);
+}
+
+@Override
+public void deleteTrackingInventory(Integer trackingInventoryId)
+{
+trackingInventoryDao.deleteTrackingInventory( trackingInventoryId);
+}
+
+@Override
+public String getAssets(String itemEpcId) 
+{
+	return trackingInventoryDao.getAssets(itemEpcId);
+}
+
+
+@Override
+public List<TrackingInventoryFinalModel> getListInventory(TrackingInventoryFinalModel model) 
+{
+	return trackingInventoryDao.getListInventory(model);
+}
+
+}
+

@@ -1,0 +1,12 @@
+package com.ecartes.service;
+
+import java.util.List;
+
+import com.ecartes.model.TempLogModel;
+
+public interface TempLogService {
+public void addTempLog(TempLogModel tempLog);
+public List<TempLogModel> getListTempLog();
+public TempLogModel  getTempLog(Integer logId);
+public void deleteTempLog(Integer logId);
+}

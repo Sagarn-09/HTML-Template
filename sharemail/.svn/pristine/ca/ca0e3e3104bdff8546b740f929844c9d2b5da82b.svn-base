@@ -1,0 +1,1233 @@
+package com.ecartes.excel;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import com.ecartes.bean.ProcessTrackingFinalBean;
+import com.ecartes.bean.RawMaterialInwardBean;
+import com.ecartes.model.AssetCategoryModel;
+import com.ecartes.model.ItemLocationModel;
+import com.ecartes.model.RawMaterialInwardModel;
+
+public class ReadWriteExcelFile {
+
+	public static List<RawMaterialInwardModel> readXLSFileMaterialFile(String Path) throws IOException, ParseException {
+		List<RawMaterialInwardModel> list = new ArrayList<RawMaterialInwardModel>();
+		System.out.println("readXLSFileJobCardFile");
+		InputStream ExcelFileToRead = new FileInputStream(Path);
+		@SuppressWarnings("resource")
+		XSSFWorkbook wb = new XSSFWorkbook(ExcelFileToRead);
+		CellStyle cellStyle = wb.createCellStyle();
+		CreationHelper createHelper = wb.getCreationHelper();
+		cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("YYYY-MM-DD HH:MM:SS"));
+
+		XSSFSheet sheet = wb.getSheetAt(0);
+		XSSFRow row;
+		Iterator<?> rows = sheet.rowIterator();
+		int count = 0;
+		int tempcount = 0;
+		while (rows.hasNext()) {
+			row = (XSSFRow) rows.next();
+			tempcount++;
+			if (count > 0) {
+				int colNum = row.getLastCellNum();
+				RawMaterialInwardModel rawMaterialInwardModel = new RawMaterialInwardModel();
+
+				AssetCategoryModel assetCategoryModel = new AssetCategoryModel();
+				AssetCategoryModel assetCategoryParent = new AssetCategoryModel();
+
+				if (1 <= colNum)
+					rawMaterialInwardModel.setAssetTagToBeEncoded(getCellValueAsString(row.getCell(1)));
+				if (2 <= colNum)
+					rawMaterialInwardModel.setTagID(getCellValueAsString(row.getCell(2)));
+				if (3 <= colNum)
+					rawMaterialInwardModel.setTrade(getCellValueAsString(row.getCell(3)));
+
+				if (4 <= colNum) {
+					assetCategoryParent.setAssetCategoryName(getCellValueAsString(row.getCell(4)));
+				}
+				if (assetCategoryParent.getAssetCategoryName() == null
+						|| assetCategoryParent.getAssetCategoryName().trim().length() <= 0)
+					assetCategoryParent.setAssetCategoryName("Other");
+				if (5 <= colNum) {
+					assetCategoryModel.setAssetCategoryName(getCellValueAsString(row.getCell(5)));
+					assetCategoryModel.setAssetCategory(assetCategoryParent);
+					rawMaterialInwardModel.setAssetCategory(assetCategoryModel);
+				}
+				if (6 <= colNum)
+					rawMaterialInwardModel.setTypeOfTags(getCellValueAsString(row.getCell(6)));
+				// if (7 <= colNum)
+				// rawMaterialInwardModel.setAssetUID(getCellValueAsString(row.getCell(7)));
+				if (8 <= colNum)
+					rawMaterialInwardModel.setAssetUID(getCellValueAsString(row.getCell(8)));
+
+				list.add(rawMaterialInwardModel);
+
+			}
+			if (tempcount <= 50)
+				break;
+			count++;
+		}
+		return list;
+	}
+
+	public static String getFormatedTIFRCode(String input) {
+		if (input != null && input.length() > 0) {
+			String output = input.replaceAll("\\s+", "").replaceAll("TCIS", "TCIS ");
+			return output.toUpperCase();
+		} else {
+			return input;
+		}
+	}
+
+	public static HashMap<String, RawMaterialInwardModel> parentList = new HashMap<String, RawMaterialInwardModel>();
+	public static HashMap<String, List<RawMaterialInwardModel>> childList = new HashMap<String, List<RawMaterialInwardModel>>();
+
+	public static void getRecordsByParentChild(List<RawMaterialInwardModel> list) {
+
+		if (list != null && list.size() > 0) {
+			for (int i = 0; i < list.size(); i++) {
+				list.get(i).setAssetUID(getFormatedTIFRCode(list.get(i).getAssetUID()));
+
+				if (list.get(i).getAssetUID() != null && !list.get(i).getAssetUID().contains("ACCESSORIES")) {
+					if (!parentList.containsKey(list.get(i).getAssetUID()))
+						parentList.put(list.get(i).getAssetUID(), list.get(i));
+				}
+
+			}
+
+			if (ReadWriteExcelFile.parentList != null && ReadWriteExcelFile.parentList.size() > 0) {
+
+				for (String key : ReadWriteExcelFile.parentList.keySet()) {
+					String data[] = key.split(" ");
+					for (int i = 0; i < list.size(); i++) {
+						System.out.println("data" + data[0]);
+						if (list.get(i).getAssetUID() != null && list.get(i).getAssetUID().contains(data[0])) {
+							if (list.get(i).getAssetUID().contains("ACCESSORIES")) {
+								if (childList.containsKey(key)) {
+									childList.get(key).add(list.get(i));
+									System.out.println("Create old child list add" + list.get(i).getAssetUID());
+								} else {
+									List<RawMaterialInwardModel> listChildHM = new ArrayList<RawMaterialInwardModel>();
+									listChildHM.add(list.get(i));
+									childList.put(key, listChildHM);
+									System.out.println("Create new child list" + list.get(i).getAssetUID());
+								}
+							}
+						}
+
+					}
+				}
+
+			}
+
+		}
+	}
+	
+	 public static List<RawMaterialInwardModel> readXLSFileMaterialFileTIFR(String path)
+	            throws IOException, ParseException {
+	        List<RawMaterialInwardModel> list = new ArrayList<>();
+	        System.out.println("Reading XLS File");
+
+	        try (InputStream excelFileToRead = new FileInputStream(path);
+	             XSSFWorkbook wb = new XSSFWorkbook(excelFileToRead)) {
+
+	            XSSFSheet sheet = wb.getSheetAt(0);
+	            if (sheet == null) {
+	                throw new IOException("Sheet not found in the Excel file");
+	            }
+
+	            // Validate headers
+	            XSSFRow headerRow = sheet.getRow(0);
+	            String[] expectedHeaders = {
+	            		"No","SrNo", "Asset Name", "Vendor Name","PO.Number","Bill Number","Description", "Types of Tags",
+	                "Category Name", "Sub Category Name", "Building Name", "Floor Name",
+	                "Room Name", "AMC Due Date", "EPC Tag ID","Asset UID"
+	            };
+
+	            if (!isHeaderValid(headerRow, expectedHeaders)) {
+	                throw new IOException("Invalid file format: Headers do not match expected format.");
+	            }
+
+	            // Process rows
+	            int count = 0;
+	            for (Iterator<?> rows = sheet.rowIterator(); rows.hasNext(); count++) {
+	                XSSFRow row = (XSSFRow) rows.next();
+
+	                // Skip the header row
+	                if (count == 0) continue;
+
+	                RawMaterialInwardModel rawMaterialInwardModel = new RawMaterialInwardModel();
+	                AssetCategoryModel assetCategoryModel = new AssetCategoryModel();
+	                AssetCategoryModel assetCategoryParent = new AssetCategoryModel();
+	                ItemLocationModel binLocationModel = new ItemLocationModel();
+	                ItemLocationModel binLocationParentModel = new ItemLocationModel();
+
+	                int colNum = row.getLastCellNum();
+	                if (1 <= colNum) {
+	                    rawMaterialInwardModel.setSrNo(getCellValueAsString(row.getCell(1)));
+	                }
+	                if (2 <= colNum) {
+	                    rawMaterialInwardModel.setAssetName(getCellValueAsString(row.getCell(2)));
+	                }
+	                if (3 <= colNum) {
+	                    rawMaterialInwardModel.setVendorName(getCellValueAsString(row.getCell(3)));
+	                }
+	                if (4 <= colNum) {
+	                    rawMaterialInwardModel.setPoNo(getCellValueAsString(row.getCell(4)));
+	                }
+	                if (5 <= colNum) {
+	                    rawMaterialInwardModel.setBillNo(getCellValueAsString(row.getCell(5)));
+	                }
+	                if (6 <= colNum) {
+	                    rawMaterialInwardModel.setDescription(getCellValueAsString(row.getCell(6)));
+	                }
+	                if (7 <= colNum) {
+	                    rawMaterialInwardModel.setTypeOfTags(getCellValueAsString(row.getCell(7)));
+	                    if(rawMaterialInwardModel.getTypeOfTags()!=null )
+	                    {
+	                    	if(rawMaterialInwardModel.getTypeOfTags().contains("Flexible"))
+	                    	{
+	                    		rawMaterialInwardModel.setTypeOfTags("Flexible");
+	                    	}else if(rawMaterialInwardModel.getTypeOfTags().contains("Paper"))
+	                    	{
+	                    		rawMaterialInwardModel.setTypeOfTags("Paper");
+	                    	}else if(rawMaterialInwardModel.getTypeOfTags().contains("Pet"))
+	                    	{
+	                    		rawMaterialInwardModel.setTypeOfTags("Pet");
+	                    	}
+	                    }
+	                }
+	                if (8 <= colNum) {
+	                    assetCategoryParent.setAssetCategoryName(getCellValueAsString(row.getCell(8)));
+	                }
+	                if (assetCategoryParent.getAssetCategoryName() == null
+	                        || assetCategoryParent.getAssetCategoryName().trim().isEmpty()) {
+	                    assetCategoryParent.setAssetCategoryName("Other");
+	                }
+	                if (9 <= colNum) {
+	                    assetCategoryModel.setAssetCategoryName(getCellValueAsString(row.getCell(9)));
+	                    assetCategoryModel.setAssetCategory(assetCategoryParent);
+	                }
+	                if ((assetCategoryModel.getAssetCategoryName() == null
+	                        || assetCategoryModel.getAssetCategoryName().trim().isEmpty()) && assetCategoryParent != null) {
+	                    rawMaterialInwardModel.setAssetCategory(assetCategoryParent);
+	                } else {
+	                    rawMaterialInwardModel.setAssetCategory(assetCategoryModel);
+	                }
+
+	                if (10 <= colNum) {
+	                    String parentLocationName = getCellValueAsString(row.getCell(10));
+	                    if (parentLocationName == null || parentLocationName.trim().isEmpty()) {
+	                        parentLocationName = "Other"; // Default parent location
+	                    }
+	                    binLocationParentModel.setItemLocationName(parentLocationName);
+	                }
+
+	                if (11 <= colNum) {
+	                    String childLocationName = getCellValueAsString(row.getCell(11));
+	                    if (childLocationName != null && !childLocationName.trim().isEmpty()) {
+	                        binLocationModel.setItemLocationName(childLocationName);
+	                        binLocationModel.setFloorName(childLocationName);
+	                        binLocationModel.setItemLocationParent(binLocationParentModel);
+	                        rawMaterialInwardModel.setBinLocation(binLocationModel);
+	                    } else {
+	                        rawMaterialInwardModel.setBinLocation(binLocationParentModel);
+	                    }
+	                }
+
+	                if (12 <= colNum) {
+	                    rawMaterialInwardModel.setSpaceFloorName(getCellValueAsString(row.getCell(12)));
+	                }
+
+	                if (13 <= colNum) {
+	                    String amcDueDateStr = getCellValueAsString(row.getCell(13));
+	                    System.out.println("amcDueDateStr"+amcDueDateStr);
+	                    try {
+	                    	if(amcDueDateStr!=null && amcDueDateStr.length()>0 && !amcDueDateStr.contains("-"))
+	                    	{
+		                        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+		                        Date amcDueDate = dateFormat.parse(amcDueDateStr);
+		                        rawMaterialInwardModel.setAmcDueDate(amcDueDate);
+	                    	}
+	                    	if(amcDueDateStr!=null && amcDueDateStr.length()>0 && amcDueDateStr.contains("-"))
+	                    	{
+		                        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+		                        Date amcDueDate = dateFormat.parse(amcDueDateStr);
+		                        rawMaterialInwardModel.setAmcDueDate(amcDueDate);
+	                    	}
+	                    } catch (ParseException e) {
+	                        System.err.println("Invalid date format for AMC Due Date: " + amcDueDateStr);
+	                        e.printStackTrace();
+	                    }catch (Exception e) {
+	                        System.err.println("Invalid date format for AMC Due Date: " + amcDueDateStr);
+	                        e.printStackTrace();
+	                    }
+	                }
+	                if (14 <= colNum) {
+	                    rawMaterialInwardModel.setTagID(getCellValueAsString(row.getCell(14)));
+	                }
+	                if (15 <= colNum) {
+	                    rawMaterialInwardModel.setAssetUID(getCellValueAsString(row.getCell(15)));
+	                }
+
+	                list.add(rawMaterialInwardModel);
+	            }
+	        }
+	        return list;
+	    }
+
+	    // Utility method to validate headers
+	    private static boolean isHeaderValid(XSSFRow row, String[] expectedHeaders) {
+	        if (row == null || expectedHeaders == null) {
+	            return false;
+	        }
+
+	        for (int i = 0; i < expectedHeaders.length; i++) {
+	            XSSFCell cell = row.getCell(i);
+	            String header = cell != null ? cell.getStringCellValue().trim() : null;
+	            if (header == null || !header.equalsIgnoreCase(expectedHeaders[i])) {
+	                System.err.println("Header mismatch at column " + (i + 1) + ": Expected '" + expectedHeaders[i] + "' but found '" + header + "'");
+	                return false;
+	            }
+	        }
+	        return true;
+	    }
+
+//	public static List<RawMaterialInwardModel> readXLSFileMaterialFileTIFR(String path)
+//			throws IOException, ParseException {
+//		List<RawMaterialInwardModel> list = new ArrayList<>();
+//		System.out.println("readXLSFileJobCardFile");
+//		InputStream excelFileToRead = new FileInputStream(path);
+//		@SuppressWarnings("resource")
+//		XSSFWorkbook wb = new XSSFWorkbook(excelFileToRead);
+//		CellStyle cellStyle = wb.createCellStyle();
+//		CreationHelper createHelper = wb.getCreationHelper();
+//		cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("YYYY-MM-DD HH:MM:SS"));
+//
+//		XSSFSheet sheet = wb.getSheetAt(0);
+//		XSSFRow row;
+//		Iterator<?> rows = sheet.rowIterator();
+//		int count = 0;
+//		while (rows.hasNext()) {
+//			row = (XSSFRow) rows.next();
+//
+//			if (count > 0) {
+//				int colNum = row.getLastCellNum();
+//
+//				RawMaterialInwardModel rawMaterialInwardModel = new RawMaterialInwardModel();
+//				AssetCategoryModel assetCategoryModel = new AssetCategoryModel();
+//				AssetCategoryModel assetCategoryParent = new AssetCategoryModel();
+//				ItemLocationModel binLocationModel = new ItemLocationModel();
+//				ItemLocationModel binLocationParentModel = new ItemLocationModel();
+//
+//				if (1 <= colNum) {
+//					rawMaterialInwardModel.setSrNo(getCellValueAsString(row.getCell(1)));
+//				}
+//				// if (2 <= colNum) {
+//				// rawMaterialInwardModel.setAssetUID(getCellValueAsString(row.getCell(2)));
+//				// }
+//				if (2 <= colNum) {
+//					rawMaterialInwardModel.setAssetName(getCellValueAsString(row.getCell(2)));
+//				}
+//				if (3 <= colNum) {
+//					rawMaterialInwardModel.setDescription(getCellValueAsString(row.getCell(3)));
+//				}
+//				if (4 <= colNum) {
+//					rawMaterialInwardModel.setTypeOfTags(getCellValueAsString(row.getCell(4)));
+//				}
+//				if (5 <= colNum) {
+//					assetCategoryParent.setAssetCategoryName(getCellValueAsString(row.getCell(5)));
+//				}
+//				if (assetCategoryParent.getAssetCategoryName() == null
+//						|| assetCategoryParent.getAssetCategoryName().trim().isEmpty()) {
+//					assetCategoryParent.setAssetCategoryName("Other");
+//				}
+//				if (6 <= colNum) {
+//					assetCategoryModel.setAssetCategoryName(getCellValueAsString(row.getCell(6)));
+//					assetCategoryModel.setAssetCategory(assetCategoryParent);
+//				}
+//				if ((assetCategoryModel.getAssetCategoryName() == null
+//						|| assetCategoryModel.getAssetCategoryName().trim().isEmpty()) && assetCategoryParent != null) {
+//					rawMaterialInwardModel.setAssetCategory(assetCategoryParent);
+//				} else {
+//					rawMaterialInwardModel.setAssetCategory(assetCategoryModel);
+//				}
+//
+//				if (7 <= colNum) {
+//					String parentLocationName = getCellValueAsString(row.getCell(7));
+//					if (parentLocationName == null || parentLocationName.trim().isEmpty()) {
+//						parentLocationName = "Other"; // Default parent location
+//					}
+//					binLocationParentModel.setItemLocationName(parentLocationName);
+//				}
+//
+//				if (8 <= colNum) {
+//					String childLocationName = getCellValueAsString(row.getCell(8));
+//					if (childLocationName != null && !childLocationName.trim().isEmpty()) {
+//						binLocationModel.setItemLocationName(childLocationName);
+//						binLocationModel.setFloorName(childLocationName);
+//						binLocationModel.setItemLocationParent(binLocationParentModel);
+//						rawMaterialInwardModel.setBinLocation(binLocationModel);
+//					} else {
+//						rawMaterialInwardModel.setBinLocation(binLocationParentModel);
+//					}
+//				}
+//
+//				if (9 <= colNum) {
+//					rawMaterialInwardModel.setSpaceFloorName(getCellValueAsString(row.getCell(9)));
+//				}
+//
+//				// if (10 <= colNum) {
+//				// rawMaterialInwardModel.setAmcDueDate(getCellValueAsString(row.getCell(10)));
+//				// }
+//
+//				if (10 <= colNum) {
+//					String amcDueDateStr = getCellValueAsString(row.getCell(10)); 
+//
+//					try {
+//						SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-YYYY");
+//						Date amcDueDate = dateFormat.parse(amcDueDateStr); 
+//						rawMaterialInwardModel.setAmcDueDate(amcDueDate); 
+//					} catch (ParseException e) {
+//						System.err.println("Invalid date format for AMC Due Date: " + amcDueDateStr);
+//						e.printStackTrace();
+//					}
+//				}
+//				if (11 <= colNum) {
+//					rawMaterialInwardModel.setTagID(getCellValueAsString(row.getCell(11)));
+//				}
+//				// if (11 <= colNum)
+//				// rawMaterialInwardModel.setTrade(getCellValueAsString(row.getCell(11)));
+//				list.add(rawMaterialInwardModel);
+//			}
+//			count++;
+//		}
+//		return list;
+//	}
+
+	
+
+	@SuppressWarnings("deprecation")
+	public static String getCellValueAsString(XSSFCell cell) throws ParseException {
+
+		String strCellValue = null;
+
+		if (cell != null) {
+			switch (cell.getCellType()) {
+			case XSSFCell.CELL_TYPE_STRING:
+				strCellValue = cell.toString();
+				break;
+			case XSSFCell.CELL_TYPE_NUMERIC:
+				if (DateUtil.isCellDateFormatted(cell)) {
+					SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+					strCellValue = dateFormat.format(cell.getDateCellValue());
+				} else {
+					Double value = cell.getNumericCellValue();
+					Long longValue = value.longValue();
+					strCellValue = new String(longValue.toString());
+				}
+				break;
+			case XSSFCell.CELL_TYPE_BOOLEAN:
+				strCellValue = new String(new Boolean(cell.getBooleanCellValue()).toString());
+				break;
+			case XSSFCell.CELL_TYPE_BLANK:
+				strCellValue = "";
+				break;
+
+			case XSSFCell.CELL_TYPE_FORMULA:
+				strCellValue = "";
+				break;
+
+			}
+		}
+		if (strCellValue != null)
+			strCellValue = strCellValue.trim();
+		return strCellValue;
+	}
+
+	public static String writeXLAllMaster(List<RawMaterialInwardBean> list, String path, String reportName) {
+		try {
+			if (list != null) {
+				SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy_hhmmss");
+
+				String excelFileName = path + sdf.format(new Date()) + ".xls";// name of excel file
+				String excelFileNameReturn = sdf.format(new Date()) + ".xls";// name of excel file
+
+				String sheetName = reportName;// name of sheet
+
+				@SuppressWarnings("resource")
+				HSSFWorkbook wb = new HSSFWorkbook();
+				HSSFSheet sheet = wb.createSheet(sheetName);
+				CellStyle cellStyle = wb.createCellStyle();
+				CreationHelper createHelper = wb.getCreationHelper();
+				cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("yyyy-mm-dd hh:mm:ss"));
+				// iterating r number of rows
+				int count = 1;
+				for (int r = 0; list != null && r < list.size(); r++) {
+					if (r == 0) {
+
+						HSSFRow row = sheet.createRow(r);
+
+						HSSFCell cell = row.createCell(0);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Serial No");
+
+						cell = row.createCell(1);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Asset Tag to be Encoded");
+
+						cell = row.createCell(2);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Last Scan Building & Floor");
+
+						cell = row.createCell(3);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Last Scan Space Name");
+
+						cell = row.createCell(4);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Scan Building & Floor");
+
+						cell = row.createCell(5);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Scan Space Name");
+
+						cell = row.createCell(6);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Trade");
+
+						cell = row.createCell(7);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Sub Type");
+
+						cell = row.createCell(8);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Asset UID");
+
+						
+						cell = row.createCell(9);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Vendor Name");
+						
+						cell = row.createCell(10);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Po Number");
+						
+						cell = row.createCell(11);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Bill Number");
+
+						
+						cell = row.createCell(12);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Type of Tags");
+
+						cell = row.createCell(13);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Verified on Site");
+
+						cell = row.createCell(14);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Modify By");
+
+						cell = row.createCell(15);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Modify Date");
+
+						cell = row.createCell(16);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Status");
+
+					}
+					SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
+
+					HSSFRow row = sheet.createRow(count++);
+					HSSFCell cell = row.createCell(0);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r) != null) {
+						cell.setCellValue(r + 1);
+					}
+
+					cell = row.createCell(1);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getAssetTagToBeEncoded() != null) {
+						cell.setCellValue(list.get(r).getAssetUID());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(2);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getBinLocation() != null
+							&& list.get(r).getBinLocation().getItemLocationName() != null
+							&& list.get(r).getBinLocation().getItemLocationParent() != null
+							&& list.get(r).getBinLocation().getItemLocationParent().getItemLocationName() != null) {
+						cell.setCellValue(list.get(r).getBinLocation().getItemLocationName()
+								+ list.get(r).getBinLocation().getItemLocationParent().getItemLocationName());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(3);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getSpaceFloorName() != null) {
+						cell.setCellValue(list.get(r).getSpaceFloorName());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(4);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getScanLocation() != null
+							&& list.get(r).getScanLocation().getItemLocationParent() != null
+							&& list.get(r).getScanLocation().getItemLocationParent().getItemLocationName() != null
+							&& list.get(r).getScanLocation().getItemLocationName() != null) {
+						cell.setCellValue(list.get(r).getScanLocation().getItemLocationParent().getItemLocationName()
+								+ list.get(r).getScanLocation().getItemLocationName());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(5);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getScanSpaceFloorName() != null) {
+						cell.setCellValue(list.get(r).getScanSpaceFloorName());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(6);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getTrade() != null) {
+						cell.setCellValue(list.get(r).getTrade());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(7);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getAssetCategory() != null
+							&& list.get(r).getAssetCategory().getAssetCategoryName() != null) {
+						cell.setCellValue(list.get(r).getAssetCategory().getAssetCategoryName());
+					} else {
+						cell.setCellValue("");
+					}
+					
+					cell = row.createCell(8);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getAssetUID() != null) {
+						cell.setCellValue(list.get(r).getAssetUID());
+					} else {
+						cell.setCellValue("");
+					}
+					
+					cell = row.createCell(9);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getVendorName() != null) {
+						cell.setCellValue(list.get(r).getVendorName());
+					} else {
+						cell.setCellValue("");
+					}
+					
+					cell = row.createCell(10);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getPoNo() != null) {
+						cell.setCellValue(list.get(r).getPoNo());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(11);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getBillNo() != null) {
+						cell.setCellValue(list.get(r).getBillNo());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(12);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getTypeOfTags() != null) {
+						cell.setCellValue(list.get(r).getTypeOfTags());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(13);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getVerifiedOnSite() != null) {
+						cell.setCellValue(list.get(r).getVerifiedOnSite());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(14);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getUserName() != null) {
+						cell.setCellValue(list.get(r).getUserName());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(15);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getModifyOn() != null) {
+						cell.setCellValue(dateFormat.format(list.get(r).getModifyOn()));
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(16);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getActive() != null) {
+						cell.setCellValue(list.get(r).getActive());
+					} else {
+						cell.setCellValue("");
+					}
+
+				}
+
+				FileOutputStream fileOut = new FileOutputStream(excelFileName);
+
+				wb.write(fileOut);
+				fileOut.flush();
+				fileOut.close();
+				return excelFileNameReturn;
+			}
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static String writeXLAllMasterInventory(List<ProcessTrackingFinalBean> list, String path,
+			String reportName) {
+		try {
+			if (list != null) {
+				SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy_hhmmss");
+
+				String excelFileName = path + sdf.format(new Date()) + ".xls";// name of excel file
+				String excelFileNameReturn = sdf.format(new Date()) + ".xls";// name of excel file
+
+				String sheetName = reportName;// name of sheet
+
+				HSSFWorkbook wb = new HSSFWorkbook();
+				HSSFSheet sheet = wb.createSheet(sheetName);
+				CellStyle cellStyle = wb.createCellStyle();
+				CreationHelper createHelper = wb.getCreationHelper();
+				cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("yyyy-mm-dd hh:mm:ss"));
+				// iterating r number of rows
+				int count = 1;
+				for (int r = 0; list != null && r < list.size(); r++) {
+					if (r == 0) {
+
+						HSSFRow row = sheet.createRow(r);
+
+						HSSFCell cell = row.createCell(0);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Sr. No");
+
+						/*cell = row.createCell(1);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Asset Tag to be Encoded");*/
+
+						cell = row.createCell(2);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Last Scan Building & Floor");
+
+						cell = row.createCell(3);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Last Scan Space Name");
+
+						cell = row.createCell(4);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Scan Building & Floor");
+
+						cell = row.createCell(5);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Scan Space Name");
+
+						/*cell = row.createCell(6);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Trade");*/
+
+						cell = row.createCell(7);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Sub Type");
+
+						cell = row.createCell(8);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Asset UID");
+
+						cell = row.createCell(9);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Type of Tags");
+
+						cell = row.createCell(10);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Verified on Site");
+
+						cell = row.createCell(11);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Modify By");
+
+						cell = row.createCell(12);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Modify Date");
+
+						cell = row.createCell(13);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Status");
+						
+						cell = row.createCell(14);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Asset Name");
+						
+						cell = row.createCell(15);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Vendor Name");
+						
+						cell = row.createCell(16);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Po Number");
+						
+						cell = row.createCell(17);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Bill Number");
+						
+						cell = row.createCell(18);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Description");
+						
+						cell = row.createCell(19);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("AMC Due Date");
+
+					}
+					SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
+
+					HSSFRow row = sheet.createRow(count++);
+					HSSFCell cell = row.createCell(0);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r) != null) {
+						cell.setCellValue(r + 1);
+					}
+
+					cell = row.createCell(1);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getRawMaterialInward() != null
+							&& list.get(r).getRawMaterialInward().getAssetTagToBeEncoded() != null) {
+						cell.setCellValue(list.get(r).getRawMaterialInward().getAssetTagToBeEncoded());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(2);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getRawMaterialInward() != null
+							&& list.get(r).getRawMaterialInward().getBinLocation() != null
+							&& list.get(r).getRawMaterialInward().getBinLocation().getItemLocationName() != null
+							&& list.get(r).getRawMaterialInward().getBinLocation().getItemLocationParent() != null
+							&& list.get(r).getRawMaterialInward().getBinLocation().getItemLocationParent()
+									.getItemLocationName() != null) {
+						cell.setCellValue(list.get(r).getRawMaterialInward().getBinLocation().getItemLocationParent()
+								.getItemLocationName() + " / "
+								+ list.get(r).getRawMaterialInward().getBinLocation().getItemLocationName()
+
+						);
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(3);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getRawMaterialInward() != null
+							&& list.get(r).getRawMaterialInward().getSpaceFloorName() != null) {
+						cell.setCellValue(list.get(r).getRawMaterialInward().getSpaceFloorName());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(4);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getRawMaterialInward() != null
+							&& list.get(r).getRawMaterialInward().getScanLocation() != null
+							&& list.get(r).getRawMaterialInward().getScanLocation().getItemLocationParent() != null
+							&& list.get(r).getRawMaterialInward().getScanLocation().getItemLocationParent()
+									.getItemLocationName() != null
+							&& list.get(r).getRawMaterialInward().getScanLocation().getItemLocationName() != null) {
+						cell.setCellValue(list.get(r).getRawMaterialInward().getScanLocation().getItemLocationParent()
+								.getItemLocationName() + " / "
+								+ list.get(r).getRawMaterialInward().getScanLocation().getItemLocationName());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(5);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getRawMaterialInward() != null
+							&& list.get(r).getRawMaterialInward().getScanSpaceFloorName() != null) {
+						cell.setCellValue(list.get(r).getRawMaterialInward().getScanSpaceFloorName());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(6);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getRawMaterialInward() != null
+							&& list.get(r).getRawMaterialInward().getTrade() != null) {
+						cell.setCellValue(list.get(r).getRawMaterialInward().getTrade());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(7);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getRawMaterialInward() != null
+							&& list.get(r).getRawMaterialInward().getAssetCategory() != null
+							&& list.get(r).getRawMaterialInward().getAssetCategory().getAssetCategoryName() != null) {
+						cell.setCellValue(list.get(r).getRawMaterialInward().getAssetCategory().getAssetCategoryName());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(8);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getRawMaterialInward() != null
+							&& list.get(r).getRawMaterialInward().getAssetUID() != null) {
+						cell.setCellValue(list.get(r).getRawMaterialInward().getAssetUID());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(9);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getRawMaterialInward() != null
+							&& list.get(r).getRawMaterialInward().getTypeOfTags() != null) {
+						cell.setCellValue(list.get(r).getRawMaterialInward().getTypeOfTags());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(10);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getRawMaterialInward() != null
+							&& list.get(r).getRawMaterialInward().getVerifiedOnSite() != null) {
+						cell.setCellValue(list.get(r).getRawMaterialInward().getVerifiedOnSite());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(11);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getUserName() != null) {
+						cell.setCellValue(list.get(r).getUserName());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(12);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getModifyOn() != null) {
+						cell.setCellValue(dateFormat.format(list.get(r).getModifyOn()));
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(13);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getActive() != null) {
+						cell.setCellValue("Inventory");
+					} else {
+						cell.setCellValue("");
+					}
+					
+					cell = row.createCell(14);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getRawMaterialInward() != null
+							&& list.get(r).getRawMaterialInward().getAssetName() != null) {
+						cell.setCellValue(list.get(r).getRawMaterialInward().getAssetName());
+					} else {
+						cell.setCellValue("");
+					}
+					cell = row.createCell(15);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getRawMaterialInward() != null
+							&& list.get(r).getRawMaterialInward().getDescription() != null) {
+						cell.setCellValue(list.get(r).getRawMaterialInward().getDescription());
+					} else {
+						cell.setCellValue("");
+					}
+					
+					cell = row.createCell(16);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getRawMaterialInward() != null
+							&& list.get(r).getRawMaterialInward().getAmcDueDate() != null) {
+						cell.setCellValue(dateFormat.format(list.get(r).getRawMaterialInward().getAmcDueDate()));
+					} else {
+						cell.setCellValue("");
+					}
+					
+				}
+
+				FileOutputStream fileOut = new FileOutputStream(excelFileName);
+
+				System.out.println("excelFileName" + excelFileName);
+
+				wb.write(fileOut);
+				fileOut.flush();
+				fileOut.close();
+				return excelFileNameReturn;
+			}
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static String writeXLAllMasterNotInventory(List<RawMaterialInwardBean> list, String path,
+			String reportName) {
+		try {
+			if (list != null) {
+				SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy_hhmmss");
+
+				String excelFileName = path + sdf.format(new Date()) + ".xls";// name of excel file
+				String excelFileNameReturn = sdf.format(new Date()) + ".xls";// name of excel file
+
+				String sheetName = reportName;
+
+				@SuppressWarnings("resource")
+				HSSFWorkbook wb = new HSSFWorkbook();
+				HSSFSheet sheet = wb.createSheet(sheetName);
+				CellStyle cellStyle = wb.createCellStyle();
+				CreationHelper createHelper = wb.getCreationHelper();
+				cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("yyyy-mm-dd hh:mm:ss"));
+				// iterating r number of rows
+				int count = 1;
+				for (int r = 0; list != null && r < list.size(); r++) {
+					if (r == 0) {
+
+						HSSFRow row = sheet.createRow(r);
+
+						HSSFCell cell = row.createCell(0);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Serial No");
+
+						cell = row.createCell(1);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Asset Tag to be Encoded");
+
+						cell = row.createCell(2);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Last Scan Building & Floor");
+
+						cell = row.createCell(3);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Last Scan Space Name");
+
+						cell = row.createCell(4);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Scan Building & Floor");
+
+						cell = row.createCell(5);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Scan Space Name");
+
+						cell = row.createCell(6);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Trade");
+
+						cell = row.createCell(7);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Sub Type");
+
+						cell = row.createCell(8);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Asset UID");
+
+						cell = row.createCell(9);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Type of Tags");
+
+						cell = row.createCell(10);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Verified on Site");
+
+						cell = row.createCell(11);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Modify By");
+
+						cell = row.createCell(12);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Modify Date");
+
+						cell = row.createCell(13);
+						cell.setCellType(CellType.STRING);
+						cell.setCellValue("Status");
+
+					}
+					SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
+
+					HSSFRow row = sheet.createRow(count++);
+					HSSFCell cell = row.createCell(0);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r) != null) {
+						cell.setCellValue(r + 1);
+					}
+
+					cell = row.createCell(1);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getAssetTagToBeEncoded() != null) {
+						cell.setCellValue(list.get(r).getAssetUID());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(2);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getBinLocation() != null
+							&& list.get(r).getBinLocation().getItemLocationName() != null
+							&& list.get(r).getBinLocation().getItemLocationParent() != null
+							&& list.get(r).getBinLocation().getItemLocationParent().getItemLocationName() != null) {
+						cell.setCellValue(list.get(r).getBinLocation().getItemLocationName()
+								+ list.get(r).getBinLocation().getItemLocationParent().getItemLocationName());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(3);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getSpaceFloorName() != null) {
+						cell.setCellValue(list.get(r).getSpaceFloorName());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(4);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getScanLocation() != null
+							&& list.get(r).getScanLocation().getItemLocationParent() != null
+							&& list.get(r).getScanLocation().getItemLocationParent().getItemLocationName() != null
+							&& list.get(r).getScanLocation().getItemLocationName() != null) {
+						cell.setCellValue(list.get(r).getScanLocation().getItemLocationParent().getItemLocationName()
+								+ list.get(r).getScanLocation().getItemLocationName());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(5);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getScanSpaceFloorName() != null) {
+						cell.setCellValue(list.get(r).getScanSpaceFloorName());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(6);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getTrade() != null) {
+						cell.setCellValue(list.get(r).getTrade());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(7);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getAssetCategory() != null
+							&& list.get(r).getAssetCategory().getAssetCategoryName() != null) {
+						cell.setCellValue(list.get(r).getAssetCategory().getAssetCategoryName());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(8);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getAssetUID() != null) {
+						cell.setCellValue(list.get(r).getAssetUID());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(9);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getTypeOfTags() != null) {
+						cell.setCellValue(list.get(r).getTypeOfTags());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(10);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getVerifiedOnSite() != null) {
+						cell.setCellValue(list.get(r).getVerifiedOnSite());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(11);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getUserName() != null) {
+						cell.setCellValue(list.get(r).getUserName());
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(12);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getModifyOn() != null) {
+						cell.setCellValue(dateFormat.format(list.get(r).getModifyOn()));
+					} else {
+						cell.setCellValue("");
+					}
+
+					cell = row.createCell(13);
+					cell.setCellType(CellType.STRING);
+					if (list.get(r).getActive() != null) {
+						cell.setCellValue("Not Found");
+					} else {
+						cell.setCellValue("");
+					}
+
+				}
+
+				FileOutputStream fileOut = new FileOutputStream(excelFileName);
+
+				wb.write(fileOut);
+				fileOut.flush();
+				fileOut.close();
+				return excelFileNameReturn;
+			}
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+		return null;
+	}
+}

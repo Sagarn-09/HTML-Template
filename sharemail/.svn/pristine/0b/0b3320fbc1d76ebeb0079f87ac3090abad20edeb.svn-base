@@ -1,0 +1,192 @@
+package com.ecartes.controller;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+
+import com.ecartes.bean.ItemLocationBean;
+import com.ecartes.bean.ProcessTrackingFinalBean;
+import com.ecartes.bean.RawMaterialInwardBean;
+import com.ecartes.bean.TrackingSessionBean;
+import com.ecartes.common.Common;
+import com.ecartes.excel.PdfFile;
+import com.ecartes.excel.ReadWriteExcelFile;
+
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.ecartes.service.ItemLocationService;
+import com.ecartes.service.RawMaterialInwardService;
+import com.ecartes.service.TrackingSessionService;
+import com.itextpdf.text.DocumentException;
+
+@Controller
+public class ProcessTrackingFinalController {
+	SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+
+	@Autowired
+	TrackingSessionService trackingSessionService;
+	@Autowired
+	RawMaterialInwardService rawMaterialInwardService;
+	@Autowired
+	ItemLocationService itemLocationService;
+
+	@ModelAttribute
+	public void addingCommonObject(Model model, HttpServletRequest request) {
+		model.addAttribute("sessionList",
+				TrackingSessionBean.prepareListBean(trackingSessionService.getListTrackingSession()));
+		
+		model.addAttribute("binLocationList",
+				ItemLocationBean.prepareListBean(itemLocationService.getListItemLocationAll()));
+		
+		model.addAttribute("buildingLocationList",
+				ItemLocationBean.prepareListBean(itemLocationService.getListItemLocationParent()));
+	}
+
+	@InitBinder
+	public void InitBinder(WebDataBinder binder) {
+		binder.registerCustomEditor(Date.class, "fromDate", new CustomDateEditor(dateFormat, true));
+		binder.registerCustomEditor(Date.class, "toDate", new CustomDateEditor(dateFormat, true));
+	}
+
+	@RequestMapping(value = "/display_inventory", method = { RequestMethod.GET, RequestMethod.POST })
+	public ModelAndView display_inventory(@ModelAttribute("command") ProcessTrackingFinalBean processTrackingFinalBean,
+			BindingResult result, HttpServletRequest request) throws DocumentException {
+
+		ModelAndView modelAndView = null;
+		String epcExcelDownload = null;
+		String epcPDFDownload = null;
+
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/processTrackingFinal/display_inventory");
+			return modelAndView;
+		} else {
+			modelAndView = new ModelAndView("pages/processTrackingFinal/display_inventory");
+			
+			List<ProcessTrackingFinalBean> list = null;
+			if (request.getMethod().equalsIgnoreCase("POST")) {
+
+				processTrackingFinalBean.setActive(true);
+				
+				list = ProcessTrackingFinalBean.prepareListBean(
+						rawMaterialInwardService.getListProcessTrackingFinal(processTrackingFinalBean));
+
+				epcExcelDownload = ReadWriteExcelFile.writeXLAllMasterInventory(list, Common.DownloadExcelFiles,
+						"Inventory Found List");
+
+				PdfFile file = new PdfFile();
+
+				epcPDFDownload = file.pdfDataInventory(list, Common.DownloadExcelFiles, "Inventory Found List");
+
+				modelAndView.addObject("processTrackingFinalList", list);
+
+			} else {
+				processTrackingFinalBean.setActive(true);
+				modelAndView.addObject("processTrackingFinalList", null);// , ProcessTrackingFinalBean.prepareListBean(rawMaterialInwardService.getListProcessTrackingFinal(processTrackingFinalBean))
+
+			}
+			modelAndView.addObject("epcPDFDownload", epcPDFDownload);
+			modelAndView.addObject("epcExcelDownload", epcExcelDownload);
+			
+			processTrackingFinalBean.setItemLocationId(null);
+			processTrackingFinalBean.setScanFloorName(null);
+			processTrackingFinalBean.setScanSpaceName(null);
+			
+			modelAndView.addObject("processTrackingFinalBean", processTrackingFinalBean);
+			
+			return modelAndView;
+		}
+
+	}
+
+	@RequestMapping(value = "/display_not_inventory", method = { RequestMethod.GET, RequestMethod.POST })
+	public ModelAndView display_not_inventory(
+			@ModelAttribute("command") ProcessTrackingFinalBean processTrackingFinalBean, BindingResult result,
+			HttpServletRequest request) throws DocumentException {
+
+		ModelAndView modelAndView = null;
+		String epcExcelDownload = null;
+		String epcPDFDownload = null;
+
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/processTrackingFinal/display_not_inventory");
+			return modelAndView;
+		} else {
+			modelAndView = new ModelAndView("pages/processTrackingFinal/display_not_inventory");
+
+			if (request.getMethod().equalsIgnoreCase("POST")) {
+				processTrackingFinalBean.setActive(true);
+
+				if (processTrackingFinalBean.getTrackingSessionBean() != null) {
+					List<RawMaterialInwardBean> list = RawMaterialInwardBean
+							.prepareListBean(rawMaterialInwardService.getListInventoryNotFound(
+									processTrackingFinalBean.getTrackingSessionBean().getTrackingSessionId()));
+
+					epcExcelDownload = ReadWriteExcelFile.writeXLAllMasterNotInventory(list, Common.DownloadExcelFiles,
+							"Inventory Not Found List");
+
+					PdfFile file = new PdfFile();
+
+					epcPDFDownload = file.pdfDataNotInventory(list, Common.DownloadExcelFiles, "Inventory Not Found List");
+					
+					modelAndView.addObject("processTrackingFinalList", list);
+
+				}
+
+			} else {
+				processTrackingFinalBean.setActive(true);
+				if (processTrackingFinalBean.getTrackingSessionBean() != null)
+					modelAndView.addObject("processTrackingFinalList",
+							RawMaterialInwardBean.prepareListBean(rawMaterialInwardService.getListInventoryNotFound(
+									processTrackingFinalBean.getTrackingSessionBean().getTrackingSessionId())));
+
+			}
+
+			modelAndView.addObject("epcPDFDownload", epcPDFDownload);
+			modelAndView.addObject("epcExcelDownload", epcExcelDownload);
+
+			modelAndView.addObject("processTrackingFinalBean", processTrackingFinalBean);
+			return modelAndView;
+		}
+
+	}
+
+	@RequestMapping(value = "/trackingByAssetID", method = { RequestMethod.GET, RequestMethod.POST })
+	public ModelAndView getListTrackingByAssetID(
+			@ModelAttribute("command") ProcessTrackingFinalBean processTrackingFinalBean, BindingResult result,
+			HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/processTrackingFinal/inventory_history");
+			return modelAndView;
+		} else {
+			modelAndView = new ModelAndView("pages/processTrackingFinal/inventory_history");
+			if (request.getMethod().equalsIgnoreCase("POST")) {
+				System.out.print("search post invenoty");
+				processTrackingFinalBean.setActive(true);
+				modelAndView.addObject("processTrackingFinalList", ProcessTrackingFinalBean
+						.prepareListBean(rawMaterialInwardService.getListTrackingByAssetID(processTrackingFinalBean)));
+
+			} else {
+				processTrackingFinalBean.setActive(true);
+				modelAndView.addObject("processTrackingFinalList", null);// ProcessTrackingFinalBean.prepareListBean(rawMaterialInwardService.getListProcessTrackingFinal(processTrackingFinalBean))
+
+			}
+			modelAndView.addObject("processTrackingFinalBean", processTrackingFinalBean);
+			return modelAndView;
+		}
+
+	}
+
+}

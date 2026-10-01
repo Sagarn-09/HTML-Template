@@ -1,0 +1,805 @@
+package com.ecartes.dao;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import org.hibernate.Criteria;
+import org.hibernate.Query;
+import org.hibernate.SQLQuery;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.ecartes.bean.BulkProcessHH;
+import com.ecartes.bean.ProcessTrackingFinalBean;
+import com.ecartes.bean.RawMaterialInwardBean;
+import com.ecartes.common.Common;
+import com.ecartes.model.ProcessTrackingFinalModel;
+import com.ecartes.model.RawMaterialInwardModel;
+import com.ecartes.model.RawMaterialInwardModelHistory;
+
+@Repository("rawMaterialInwardDAO")
+public class RawMaterialInwardDAOImpl implements RawMaterialInwardDAO {
+	@Autowired
+	private SessionFactory sessionFactory;
+
+	@Override
+	public void addRawMaterialInward(RawMaterialInwardModel rawMaterialInward) {
+		sessionFactory.getCurrentSession().saveOrUpdate(rawMaterialInward);
+	}
+
+	public void updateMaterial(RawMaterialInwardModel rawMaterialInward) {
+
+		Query q = sessionFactory.getCurrentSession().createQuery(
+				"update RawMaterialInwardModel set assetCategory.assetCategoryId=:assetCategoryId, modifyOn=:modifyOn,assetTagToBeEncoded=:assetTagToBeEncoded,trade=:trade,typeOfTags=:typeOfTags where rawMaterialInwardID=:rawMaterialInwardID");
+
+		if (rawMaterialInward.getAssetCategory() != null) {
+			q.setParameter("assetCategoryId", rawMaterialInward.getAssetCategory().getAssetCategoryId());
+		} else
+			q.setParameter("assetCategoryId", null);
+
+		q.setParameter("modifyOn", new Date());
+		q.setParameter("assetTagToBeEncoded", rawMaterialInward.getAssetTagToBeEncoded());
+		q.setParameter("trade", rawMaterialInward.getTrade());
+		q.setParameter("typeOfTags", rawMaterialInward.getTypeOfTags());
+		q.setParameter("rawMaterialInwardID", rawMaterialInward.getRawMaterialInwardID());
+
+		int status = q.executeUpdate();
+		System.out.println(
+				"update status" + status + ", RawMaterialInwardID=" + rawMaterialInward.getRawMaterialInwardID());
+
+	}
+
+	public void addRawMaterialInwardHistory(RawMaterialInwardModelHistory rawMaterialInward) {
+		sessionFactory.getCurrentSession().saveOrUpdate(rawMaterialInward);
+	}
+
+	@Override
+	public List<RawMaterialInwardModel> getListRawMaterialInwardActiveIncremental(
+			RawMaterialInwardBean rawMaterialInwardBean) {
+//		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(RawMaterialInwardModel.class);
+//
+//		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getFromDate() != null) {
+//			criteria.add(Restrictions.gt("modifyOn", rawMaterialInwardBean.getFromDate()));
+//		}
+//
+		Integer parentLocationId = rawMaterialInwardBean.getParentLocationId();
+//		
+//		criteria.add(Restrictions.eq("active", true));
+
+		SQLQuery qry;
+
+		StringBuffer sb = new StringBuffer();
+//		sb.append(" select rawMaterialInwardID, assetTagToBeEncoded, verifiedOnSite, scanSpaceFloorName, spaceFloorName, assetUID,trade,typeOfTags, tagID,  active, createdBy, createdOn, modifyBy, modifyOn, assetCategoryId,  binLocationId, scanLocationId, rawMaterialParentID, parentLocationId from [dbo].[RawMaterialInward] where rawMaterialParentID is null and active=1 ");
+
+		sb.append("select rawMaterialInwardID, assetTagToBeEncoded, verifiedOnSite, scanSpaceFloorName, spaceFloorName, assetUID, trade, typeOfTags, tagID, active, createdBy, createdOn, modifyBy, modifyOn, assetCategoryId, binLocationId, scanLocationId, rawMaterialParentID, parentLocationId , assetName, description, amcDueDate, srNo, reason,vendorName,poNo,billNo ");
+		sb.append(" from [dbo].[RawMaterialInward] ");
+		sb.append("where rawMaterialParentID is null and active=1 ");
+		
+//		if (parentLocationId != null) {
+//		    sb.append("and parentLocationId = ").append(parentLocationId);
+//		}
+				
+		qry = sessionFactory.getCurrentSession().createSQLQuery(sb.toString());
+
+		qry.addEntity(RawMaterialInwardModel.class);
+
+		List<RawMaterialInwardModel> list = (List<RawMaterialInwardModel>) qry.list();
+
+	//	System.out.println("list Size:"+list.size());
+		
+		return list;
+	}
+
+	@Override
+	public List<RawMaterialInwardModel> getListRawMaterialInward(RawMaterialInwardBean rawMaterialInwardBean) {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(RawMaterialInwardModel.class);
+		Date maxDate = null;
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getToDate() != null)
+			maxDate = Common.getEndDate(rawMaterialInwardBean.getToDate());
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getFromDate() != null && maxDate != null) {
+			criteria.add(Restrictions.between("modifyOn", rawMaterialInwardBean.getFromDate(), maxDate));
+		}
+		if (rawMaterialInwardBean.getMessage() != null && rawMaterialInwardBean.getMessage().equalsIgnoreCase("0"))
+			criteria.add(Restrictions.eq("active", false));
+		else if (rawMaterialInwardBean.getMessage() != null && rawMaterialInwardBean.getMessage().equalsIgnoreCase("1"))
+			criteria.add(Restrictions.eq("active", true));
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getOperation() != null
+				&& rawMaterialInwardBean.getOperation().length() > 1 && rawMaterialInwardBean.getCallingPage() != null
+				&& rawMaterialInwardBean.getCallingPage().length() > 0) {
+
+			criteria.add(Restrictions.like(rawMaterialInwardBean.getOperation(),
+					rawMaterialInwardBean.getCallingPage().replaceAll("'", "''"), MatchMode.ANYWHERE));
+		}
+		return criteria.list();
+	}
+
+	@Override
+	public List<RawMaterialInwardModel> getListRawMaterialWarantyExpired(RawMaterialInwardBean rawMaterialInwardBean) {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(RawMaterialInwardModel.class);
+
+		criteria.add(Restrictions.le("expiryDate", new Date()));
+		criteria.add(Restrictions.eq("active", true));
+//		criteria.setFirstResult(rawMaterialInwardBean.getRawMaterialInwardID() - 1);
+//		criteria.setMaxResults(100);
+		return criteria.list();
+	}
+
+	@Override
+	public RawMaterialInwardModel getRawMaterialInward(Integer rawMaterialInwardID) {
+		return (RawMaterialInwardModel) sessionFactory.getCurrentSession().get(RawMaterialInwardModel.class,
+				rawMaterialInwardID);
+	}
+
+	
+	@Override
+	public RawMaterialInwardModel getLastRawMaterialInward() {
+	    String hql = "FROM RawMaterialInwardModel ORDER BY id DESC"; // Replace 'id' with the appropriate field name
+	    Query query = sessionFactory.getCurrentSession().createQuery(hql);
+	    query.setMaxResults(1);
+	    return (RawMaterialInwardModel) query.uniqueResult();
+	}
+	
+	@Override
+	public void deleteRawMaterialInward(Integer rawMaterialInwardID) {
+		sessionFactory.getCurrentSession()
+				.createQuery("DELETE FROM RawMaterialInward WHERE rawMaterialInwardID=" + rawMaterialInwardID)
+				.executeUpdate();
+	}
+
+	@Override
+	public RawMaterialInwardModel getRawMaterialInward(String tagID) {
+		List<RawMaterialInwardModel> list = (List<RawMaterialInwardModel>) sessionFactory.getCurrentSession()
+				.createCriteria(RawMaterialInwardModel.class).add(Restrictions.eq("tagID", tagID)).list();
+		if (list != null && list.size() > 0)
+			return list.get(list.size() - 1);
+		return null;
+	}
+
+	@Override
+	public RawMaterialInwardModel getRawMaterialInwardByMaterialCode(String assetUID) {
+		List<RawMaterialInwardModel> list = (List<RawMaterialInwardModel>) sessionFactory.getCurrentSession()
+				.createCriteria(RawMaterialInwardModel.class).add(Restrictions.eq("assetUID", assetUID)).list();
+		if (list != null && list.size() > 0)
+			return list.get(list.size() - 1);
+		return null;
+	}
+
+	public void postData(BulkProcessHH bulkProcessHH) {
+		try {
+			Query query = null;
+
+			String list[] = bulkProcessHH.getTagList().split(",");
+			List<String> tagList = new ArrayList<String>();
+			int count = 0;
+			StringBuffer sb = null;
+			for (int i = 0; list != null && i < list.length; i++) {
+				if (count < 10) {
+					if (sb == null) {
+						sb = new StringBuffer();
+						sb.append(list[i]);
+					} else {
+						sb.append("," + list[i]);
+					}
+					count++;
+				}
+				if (count == 10) {
+					System.out.println("add in list" + sb.toString());
+					tagList.add(sb.toString());
+					sb = null;
+					count = 0;
+				}
+			}
+			if (count > 0 && count < 10) {
+				tagList.add(sb.toString());
+				sb = null;
+			}
+			for (int i = 0; tagList != null && i < tagList.size(); i++) {
+				Session session = sessionFactory.getCurrentSession();
+				StringBuffer sb1 = new StringBuffer();
+				sb1.append(" {call dbo.spTrackingProcess (?,?,?,?,?,?,?,?,?,?,?,? ) } ");
+				query = session.createSQLQuery(sb1.toString());
+				query.setString(0, bulkProcessHH.getProcessName());
+				query.setInteger(1, bulkProcessHH.getCreatedBy());
+
+				query.setTimestamp(2, new Date(bulkProcessHH.getProcessTimeLog()));
+				query.setBoolean(3, bulkProcessHH.getActive());
+				query.setString(4, bulkProcessHH.getDeviceSerialNo());
+				query.setString(5, tagList.get(i));
+				query.setString(6, bulkProcessHH.getOperationStatus());
+				query.setString(7, bulkProcessHH.getRemark());
+				query.setString(8, bulkProcessHH.getStoreName());
+				query.setString(9, bulkProcessHH.getIoStatus());
+				query.setString(10, bulkProcessHH.getToStore());
+				query.setInteger(11, bulkProcessHH.getScanLocationID());
+				query.executeUpdate();
+				Thread.sleep(300);
+			}
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+
+	}
+
+	@Override
+	public List<ProcessTrackingFinalModel> getListProcessTrackingFinal(
+			ProcessTrackingFinalBean processTrackingFinalBean) {
+
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(ProcessTrackingFinalModel.class,
+				"details");
+		criteria.createAlias("details.rawMaterialInward", "rawMaterialInward");
+
+		boolean success = false;
+
+		Date maxDate = null;
+		if (processTrackingFinalBean.getToDate() != null)
+			maxDate = Common.getEndDate(processTrackingFinalBean.getToDate());
+		if (processTrackingFinalBean.getActive()) {
+			criteria.add(Restrictions.eq("active", processTrackingFinalBean.getActive()));
+			success = true;
+		}
+		if (processTrackingFinalBean.getFromDate() != null && maxDate != null) {
+			criteria.add(Restrictions.between("createdOn", processTrackingFinalBean.getFromDate(), maxDate));
+			success = true;
+		}
+		if (processTrackingFinalBean.getOperation() != null && processTrackingFinalBean.getOperation().length() > 1) {
+
+			criteria.add(Restrictions.eq("status", processTrackingFinalBean.getOperation()));
+			success = true;
+		}
+
+		if (processTrackingFinalBean.getCallingPage() != null
+				&& processTrackingFinalBean.getCallingPage().length() > 1) {
+
+			criteria.add(Restrictions.eq("operationStatus", processTrackingFinalBean.getCallingPage()));
+
+			success = true;
+		}
+
+		if (processTrackingFinalBean.getTrackingSessionBean() != null
+				&& processTrackingFinalBean.getTrackingSessionBean().getTrackingSessionId() != null
+				&& processTrackingFinalBean.getTrackingSessionBean().getTrackingSessionId() > 0) {
+			success = true;
+			criteria.add(Restrictions.eq("trackingSession.trackingSessionId",
+					processTrackingFinalBean.getTrackingSessionBean().getTrackingSessionId()));
+
+			if (processTrackingFinalBean.getCallingPage() == null
+					|| processTrackingFinalBean.getCallingPage().length() < 1) {
+
+				criteria.add(Restrictions.ne("operationStatus", "Inventory"));
+
+				success = true;
+			}
+		}
+
+		if (processTrackingFinalBean != null && processTrackingFinalBean.getItemLocationId() != null
+
+				&& processTrackingFinalBean.getItemLocationId() > 0) {
+			criteria.createAlias("rawMaterialInward.scanLocation", "scanLocation");
+			criteria.add(Restrictions.or(
+					Restrictions.eq("scanLocation.itemLocationId", processTrackingFinalBean.getItemLocationId()),
+					Restrictions.eq("rawMaterialInward.parentLocationId",
+							processTrackingFinalBean.getItemLocationId())));
+		}
+
+		if (processTrackingFinalBean != null && processTrackingFinalBean.getScanFloorName() != null
+				&& processTrackingFinalBean.getScanFloorName() > 0) {
+			criteria.add(Restrictions.eq("scanLocation.itemLocationId", processTrackingFinalBean.getScanFloorName()));
+		}
+
+		if (processTrackingFinalBean != null && processTrackingFinalBean.getScanSpaceName() != null
+				&& processTrackingFinalBean.getScanSpaceName().length() > 0) {
+
+			criteria.add(Restrictions.eq("rawMaterialInward.scanSpaceFloorName",
+					processTrackingFinalBean.getScanSpaceName()));
+		}
+
+		if (success)
+			return (List<ProcessTrackingFinalModel>) criteria.list();
+
+		return null;
+	}
+
+	@Override
+	public List<ProcessTrackingFinalModel> getListTrackingByAssetID(ProcessTrackingFinalBean processTrackingFinalBean) {
+
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(ProcessTrackingFinalModel.class,
+				"details");
+		criteria.createAlias("details.rawMaterialInward", "rawMaterialInward");
+		boolean success = false;
+
+		Date maxDate = null;
+		if (processTrackingFinalBean.getToDate() != null)
+			maxDate = Common.getEndDate(processTrackingFinalBean.getToDate());
+		if (processTrackingFinalBean.getActive()) {
+			criteria.add(Restrictions.eq("active", processTrackingFinalBean.getActive()));
+			success = true;
+
+		}
+		if (processTrackingFinalBean.getFromDate() != null && maxDate != null) {
+			criteria.add(Restrictions.between("createdOn", processTrackingFinalBean.getFromDate(), maxDate));
+			success = true;
+		}
+
+		if (processTrackingFinalBean.getCallingPage() != null
+				&& processTrackingFinalBean.getCallingPage().length() > 1) {
+
+			criteria.add(Restrictions.eq("rawMaterialInward.assetUID", processTrackingFinalBean.getCallingPage()));
+
+			success = true;
+		}
+
+		if (success)
+			return (List<ProcessTrackingFinalModel>) criteria.list();
+
+		return null;
+	}
+
+	@Override
+	public List<RawMaterialInwardModel> getListInventoryNotFound(int trackingSessionId) {
+
+		SQLQuery qry;
+
+		StringBuffer sb = new StringBuffer();
+		sb.append(
+				" select * from RawMaterialInward where  len(tagID)>0 and active=1 and rawMaterialInwardID not in(select distinct rawMaterialInwardID from ProcessTrackingFinal where trackingSessionId =?) ");
+
+		qry = sessionFactory.getCurrentSession().createSQLQuery(sb.toString());
+		int parameteIndex = 0;
+		qry.setParameter(parameteIndex++, trackingSessionId);
+
+		qry.addEntity(RawMaterialInwardModel.class);
+
+		List<RawMaterialInwardModel> list = (List<RawMaterialInwardModel>) qry.list();
+
+		return list;
+
+	}
+
+	@Override
+	public Long getCount(RawMaterialInwardBean rawMaterialInwardBean) {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(RawMaterialInwardModel.class);
+		Date maxDate = null;
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getToDate() != null)
+			maxDate = Common.getEndDate(rawMaterialInwardBean.getToDate());
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getFromDate() != null && maxDate != null) {
+			criteria.add(Restrictions.between("modifyOn", rawMaterialInwardBean.getFromDate(), maxDate));
+		}
+		if (rawMaterialInwardBean.getMessage() != null && rawMaterialInwardBean.getMessage().equalsIgnoreCase("0"))
+			criteria.add(Restrictions.eq("active", false));
+		else if (rawMaterialInwardBean.getMessage() != null && rawMaterialInwardBean.getMessage().equalsIgnoreCase("1"))
+			criteria.add(Restrictions.eq("active", true));
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getOperation() != null
+				&& rawMaterialInwardBean.getOperation().length() > 1 && rawMaterialInwardBean.getCallingPage() != null
+				&& rawMaterialInwardBean.getCallingPage().length() > 0) {
+
+			criteria.add(Restrictions.like(rawMaterialInwardBean.getOperation(),
+					rawMaterialInwardBean.getCallingPage().replaceAll("'", "''"), MatchMode.ANYWHERE));
+		}
+		criteria.setProjection(Projections.rowCount());
+		Long count = (Long) criteria.uniqueResult();
+
+		return count;
+	}
+	
+	@Override
+	public List<RawMaterialInwardModel> getListMaterialSeriveExpired(RawMaterialInwardBean rawMaterialInwardBean)
+	{
+		Criteria criteria =sessionFactory.getCurrentSession().createCriteria(RawMaterialInwardModel.class); 
+
+		criteria.add(Restrictions.le("amcDueDate", new Date()));
+		
+		criteria.add(Restrictions.eq("active",true));
+		
+		if(rawMaterialInwardBean!=null && rawMaterialInwardBean.getOperation()!=null && rawMaterialInwardBean.getOperation().length()>1 &&  rawMaterialInwardBean.getCallingPage()!=null &&  rawMaterialInwardBean.getCallingPage().length()>0)
+		{
+			
+			criteria.add(Restrictions.like(rawMaterialInwardBean.getOperation(), rawMaterialInwardBean.getCallingPage().replaceAll("'", "''"),MatchMode.ANYWHERE));	
+		}
+	 return criteria.list();
+	}
+	
+	@Override
+	public List<RawMaterialInwardModel> getListMaterialSeriveUpcoming(RawMaterialInwardBean rawMaterialInwardBean)
+	{
+		Criteria criteria =sessionFactory.getCurrentSession().createCriteria(RawMaterialInwardModel.class); 
+		Date maxDate=null;
+		if(rawMaterialInwardBean!=null && rawMaterialInwardBean.getToDate()!=null)
+		maxDate=Common.getEndDate(rawMaterialInwardBean.getToDate());
+			Calendar calendar = Calendar.getInstance();
+			calendar.add(Calendar.MONTH, 1);       
+	        Date newDate = calendar.getTime();
+			criteria.add(Restrictions.le("amcDueDate", newDate));
+			criteria.add(Restrictions.gt("amcDueDate", new Date()));
+		
+		criteria.add(Restrictions.eq("active",true));
+		
+		if(rawMaterialInwardBean!=null && rawMaterialInwardBean.getOperation()!=null && rawMaterialInwardBean.getOperation().length()>1 &&  rawMaterialInwardBean.getCallingPage()!=null &&  rawMaterialInwardBean.getCallingPage().length()>0)
+		{
+			
+			criteria.add(Restrictions.like(rawMaterialInwardBean.getOperation(), rawMaterialInwardBean.getCallingPage().replaceAll("'", "''"),MatchMode.ANYWHERE));	
+		}
+	 return criteria.list();
+	}
+
+	@Override
+	public List<RawMaterialInwardModel> getListRawMaterialInwardByFilter(RawMaterialInwardBean rawMaterialInwardBean) {
+
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(RawMaterialInwardModel.class, "details");
+
+		Date maxDate = null;
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getToDate() != null)
+			maxDate = Common.getEndDate(rawMaterialInwardBean.getToDate());
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getFromDate() != null && maxDate != null) {
+
+			criteria.add(Restrictions.between("modifyOn", rawMaterialInwardBean.getFromDate(), maxDate));
+		}
+
+		if (rawMaterialInwardBean.getMessage() != null && rawMaterialInwardBean.getMessage().equalsIgnoreCase("0"))
+			criteria.add(Restrictions.eq("active", false));
+		else if (rawMaterialInwardBean.getMessage() != null && rawMaterialInwardBean.getMessage().equalsIgnoreCase("1"))
+			criteria.add(Restrictions.eq("active", true));
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getOperation() != null
+				&& rawMaterialInwardBean.getOperation().length() > 1 && rawMaterialInwardBean.getCallingPage() != null
+				&& rawMaterialInwardBean.getCallingPage().length() > 0) {
+			criteria.add(Restrictions.like(rawMaterialInwardBean.getOperation(),
+					rawMaterialInwardBean.getCallingPage().replaceAll("'", "''"), MatchMode.ANYWHERE));
+		}
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getAssetCategory() != null
+				&& rawMaterialInwardBean.getAssetCategory().getAssetCategoryId() != null
+				&& rawMaterialInwardBean.getAssetCategory().getAssetCategoryId() > 0) {
+			criteria.createAlias("details.assetCategory", "assetCategory");
+			criteria.add(Restrictions.or(
+					Restrictions.eq("assetCategory.assetCategoryId",
+							rawMaterialInwardBean.getAssetCategory().getAssetCategoryId()),
+					Restrictions.eq("assetCategory.assetCategory.assetCategoryId",
+							rawMaterialInwardBean.getAssetCategory().getAssetCategoryId())));
+		}
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getBinLocation() != null
+				&& rawMaterialInwardBean.getBinLocation().getItemLocationId() != null
+				&& rawMaterialInwardBean.getBinLocation().getItemLocationId() > 0) {
+			criteria.createAlias("details.scanLocation", "scanLocation");
+			criteria.add(Restrictions.or(
+					Restrictions.eq("scanLocation.itemLocationParent.itemLocationId",
+							rawMaterialInwardBean.getBinLocation().getItemLocationId()),
+					Restrictions.eq("parentLocationId", rawMaterialInwardBean.getParentLocationId())));
+		}
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getScanLocation() != null
+				&& rawMaterialInwardBean.getScanLocation().getItemLocationId() != null
+				&& rawMaterialInwardBean.getScanLocation().getItemLocationId() > 0) {
+			criteria.add(Restrictions.eq("scanLocation.itemLocationId",
+					rawMaterialInwardBean.getScanLocation().getItemLocationId()));
+		}
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getScanSpaceFloorName() != null
+				&& rawMaterialInwardBean.getScanSpaceFloorName().length() > 0) {
+			criteria.add(Restrictions.eq("scanSpaceFloorName", rawMaterialInwardBean.getScanSpaceFloorName()));
+		}
+
+		criteria.setFirstResult(rawMaterialInwardBean.getRawMaterialInwardID() - 1);
+		criteria.setMaxResults(100);
+		return criteria.list();
+	}
+
+	@Override
+	public List<RawMaterialInwardModel> getListRawMaterialInwardByFilterAll(
+			RawMaterialInwardBean rawMaterialInwardBean) {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(RawMaterialInwardModel.class, "details");
+		Date maxDate = null;
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getToDate() != null)
+			maxDate = Common.getEndDate(rawMaterialInwardBean.getToDate());
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getFromDate() != null && maxDate != null) {
+
+			criteria.add(Restrictions.between("modifyOn", rawMaterialInwardBean.getFromDate(), maxDate));
+		}
+
+		if (rawMaterialInwardBean.getMessage() != null && rawMaterialInwardBean.getMessage().equalsIgnoreCase("0"))
+			criteria.add(Restrictions.eq("active", false));
+		else if (rawMaterialInwardBean.getMessage() != null && rawMaterialInwardBean.getMessage().equalsIgnoreCase("1"))
+			criteria.add(Restrictions.eq("active", true));
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getOperation() != null
+				&& rawMaterialInwardBean.getOperation().length() > 1 && rawMaterialInwardBean.getCallingPage() != null
+				&& rawMaterialInwardBean.getCallingPage().length() > 0) {
+
+			criteria.add(Restrictions.like(rawMaterialInwardBean.getOperation(),
+					rawMaterialInwardBean.getCallingPage().replaceAll("'", "''"), MatchMode.ANYWHERE));
+		}
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getAssetCategory() != null
+				&& rawMaterialInwardBean.getAssetCategory().getAssetCategoryId() != null
+				&& rawMaterialInwardBean.getAssetCategory().getAssetCategoryId() > 0) {
+
+			criteria.createAlias("details.assetCategory", "assetCategory");
+			criteria.add(Restrictions.or(
+					Restrictions.eq("assetCategory.assetCategoryId",
+							rawMaterialInwardBean.getAssetCategory().getAssetCategoryId()),
+					Restrictions.eq("assetCategory.assetCategory.assetCategoryId",
+							rawMaterialInwardBean.getAssetCategory().getAssetCategoryId())));
+		}
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getBinLocation() != null
+				&& rawMaterialInwardBean.getBinLocation().getItemLocationId() != null
+				&& rawMaterialInwardBean.getBinLocation().getItemLocationId() > 0) {
+			criteria.createAlias("details.scanLocation", "scanLocation");
+			criteria.add(Restrictions.or(
+					Restrictions.eq("scanLocation.itemLocationParent.itemLocationId",
+							rawMaterialInwardBean.getBinLocation().getItemLocationId()),
+					Restrictions.eq("parentLocationId", rawMaterialInwardBean.getParentLocationId())));
+		}
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getScanLocation() != null
+				&& rawMaterialInwardBean.getScanLocation().getItemLocationId() != null
+				&& rawMaterialInwardBean.getScanLocation().getItemLocationId() > 0) {
+			criteria.add(Restrictions.eq("scanLocation.itemLocationId",
+					rawMaterialInwardBean.getScanLocation().getItemLocationId()));
+		}
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getScanSpaceFloorName() != null
+				&& rawMaterialInwardBean.getScanSpaceFloorName().length() > 0) {
+			criteria.add(Restrictions.eq("scanSpaceFloorName", rawMaterialInwardBean.getScanSpaceFloorName()));
+		}
+
+		return criteria.list();
+	}
+
+	@Override
+	public List<RawMaterialInwardModel> getListRawMaterialInwardByFilterAllNotTag(
+			RawMaterialInwardBean rawMaterialInwardBean) {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(RawMaterialInwardModel.class, "details");
+		Date maxDate = null;
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getToDate() != null)
+			maxDate = Common.getEndDate(rawMaterialInwardBean.getToDate());
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getFromDate() != null && maxDate != null) {
+
+			criteria.add(Restrictions.between("modifyOn", rawMaterialInwardBean.getFromDate(), maxDate));
+		}
+
+		if (rawMaterialInwardBean.getMessage() != null && rawMaterialInwardBean.getMessage().equalsIgnoreCase("0"))
+			criteria.add(Restrictions.eq("active", false));
+		else if (rawMaterialInwardBean.getMessage() != null && rawMaterialInwardBean.getMessage().equalsIgnoreCase("1"))
+			criteria.add(Restrictions.eq("active", true));
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getOperation() != null
+				&& rawMaterialInwardBean.getOperation().length() > 1 && rawMaterialInwardBean.getCallingPage() != null
+				&& rawMaterialInwardBean.getCallingPage().length() > 0) {
+
+			criteria.add(Restrictions.like(rawMaterialInwardBean.getOperation(),
+					rawMaterialInwardBean.getCallingPage().replaceAll("'", "''"), MatchMode.ANYWHERE));
+		}
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getAssetCategory() != null
+				&& rawMaterialInwardBean.getAssetCategory().getAssetCategoryId() != null
+				&& rawMaterialInwardBean.getAssetCategory().getAssetCategoryId() > 0) {
+
+			criteria.createAlias("details.assetCategory", "assetCategory");
+			criteria.add(Restrictions.or(
+					Restrictions.eq("assetCategory.assetCategoryId",
+							rawMaterialInwardBean.getAssetCategory().getAssetCategoryId()),
+					Restrictions.eq("assetCategory.assetCategory.assetCategoryId",
+							rawMaterialInwardBean.getAssetCategory().getAssetCategoryId())));
+		}
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getBinLocation() != null
+				&& rawMaterialInwardBean.getBinLocation().getItemLocationId() != null
+				&& rawMaterialInwardBean.getBinLocation().getItemLocationId() > 0) {
+			criteria.createAlias("details.scanLocation", "scanLocation");
+			criteria.add(Restrictions.or(
+					Restrictions.eq("scanLocation.itemLocationParent.itemLocationId",
+							rawMaterialInwardBean.getBinLocation().getItemLocationId()),
+					Restrictions.eq("parentLocationId", rawMaterialInwardBean.getParentLocationId())));
+		}
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getScanLocation() != null
+				&& rawMaterialInwardBean.getScanLocation().getItemLocationId() != null
+				&& rawMaterialInwardBean.getScanLocation().getItemLocationId() > 0) {
+			criteria.add(Restrictions.eq("scanLocation.itemLocationId",
+					rawMaterialInwardBean.getScanLocation().getItemLocationId()));
+		}
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getScanSpaceFloorName() != null
+				&& rawMaterialInwardBean.getScanSpaceFloorName().length() > 0) {
+			criteria.add(Restrictions.eq("scanSpaceFloorName", rawMaterialInwardBean.getScanSpaceFloorName()));
+		}
+
+		criteria.add(Restrictions.or(Restrictions.isNull("tagID"), Restrictions.eq("tagID", "")));
+
+		return criteria.list();
+	}
+
+	@Override
+	public List<RawMaterialInwardModel> getListRawMaterialInwardByFilterAllTag(
+			RawMaterialInwardBean rawMaterialInwardBean) {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(RawMaterialInwardModel.class, "details");
+		Date maxDate = null;
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getToDate() != null)
+			maxDate = Common.getEndDate(rawMaterialInwardBean.getToDate());
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getFromDate() != null && maxDate != null) {
+
+			criteria.add(Restrictions.between("registrationDate", rawMaterialInwardBean.getFromDate(), maxDate));
+		}
+
+		if (rawMaterialInwardBean.getMessage() != null && rawMaterialInwardBean.getMessage().equalsIgnoreCase("0"))
+			criteria.add(Restrictions.eq("active", false));
+		else if (rawMaterialInwardBean.getMessage() != null && rawMaterialInwardBean.getMessage().equalsIgnoreCase("1"))
+			criteria.add(Restrictions.eq("active", true));
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getOperation() != null
+				&& rawMaterialInwardBean.getOperation().length() > 1 && rawMaterialInwardBean.getCallingPage() != null
+				&& rawMaterialInwardBean.getCallingPage().length() > 0) {
+
+			criteria.add(Restrictions.like(rawMaterialInwardBean.getOperation(),
+					rawMaterialInwardBean.getCallingPage().replaceAll("'", "''"), MatchMode.ANYWHERE));
+		}
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getAssetCategory() != null
+				&& rawMaterialInwardBean.getAssetCategory().getAssetCategoryId() != null
+				&& rawMaterialInwardBean.getAssetCategory().getAssetCategoryId() > 0) {
+
+			criteria.createAlias("details.assetCategory", "assetCategory");
+			criteria.add(Restrictions.or(
+					Restrictions.eq("assetCategory.assetCategoryId",
+							rawMaterialInwardBean.getAssetCategory().getAssetCategoryId()),
+					Restrictions.eq("assetCategory.assetCategory.assetCategoryId",
+							rawMaterialInwardBean.getAssetCategory().getAssetCategoryId())));
+		}
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getBinLocation() != null
+				&& rawMaterialInwardBean.getBinLocation().getItemLocationId() != null
+				&& rawMaterialInwardBean.getBinLocation().getItemLocationId() > 0) {
+			criteria.createAlias("details.scanLocation", "scanLocation");
+			criteria.add(Restrictions.or(
+					Restrictions.eq("scanLocation.itemLocationParent.itemLocationId",
+							rawMaterialInwardBean.getBinLocation().getItemLocationId()),
+					Restrictions.eq("parentLocationId", rawMaterialInwardBean.getParentLocationId())));
+		}
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getScanLocation() != null
+				&& rawMaterialInwardBean.getScanLocation().getItemLocationId() != null
+				&& rawMaterialInwardBean.getScanLocation().getItemLocationId() > 0) {
+			criteria.add(Restrictions.eq("scanLocation.itemLocationId",
+					rawMaterialInwardBean.getScanLocation().getItemLocationId()));
+		}
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getScanSpaceFloorName() != null
+				&& rawMaterialInwardBean.getScanSpaceFloorName().length() > 0) {
+			criteria.add(Restrictions.eq("scanSpaceFloorName", rawMaterialInwardBean.getScanSpaceFloorName()));
+		}
+
+		criteria.add(Restrictions.and(Restrictions.isNotNull("tagID"), Restrictions.ne("tagID", "")));
+
+		return criteria.list();
+	}
+
+	@Override
+	public List<RawMaterialInwardModel> getListRawMaterialInwardByFilterAllTagScrap(
+			RawMaterialInwardBean rawMaterialInwardBean) {
+
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(RawMaterialInwardModel.class, "details");
+
+		Date maxDate = null;
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getToDate() != null)
+			maxDate = Common.getEndDate(rawMaterialInwardBean.getToDate());
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getFromDate() != null && maxDate != null) {
+
+			criteria.add(Restrictions.between("modifyOn", rawMaterialInwardBean.getFromDate(), maxDate));
+		}
+
+		criteria.add(Restrictions.eq("isScrap", true));
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getOperation() != null
+				&& rawMaterialInwardBean.getOperation().length() > 1 && rawMaterialInwardBean.getCallingPage() != null
+				&& rawMaterialInwardBean.getCallingPage().length() > 0) {
+
+			criteria.add(Restrictions.like(rawMaterialInwardBean.getOperation(),
+					rawMaterialInwardBean.getCallingPage().replaceAll("'", "''"), MatchMode.ANYWHERE));
+		}
+
+		if (rawMaterialInwardBean != null && rawMaterialInwardBean.getAssetCategory() != null
+				&& rawMaterialInwardBean.getAssetCategory().getAssetCategoryId() != null
+				&& rawMaterialInwardBean.getAssetCategory().getAssetCategoryId() > 0) {
+
+			criteria.createAlias("details.assetCategory", "assetCategory");
+			criteria.add(Restrictions.or(
+					Restrictions.eq("assetCategory.assetCategoryId",
+							rawMaterialInwardBean.getAssetCategory().getAssetCategoryId()),
+					Restrictions.eq("assetCategory.assetCategory.assetCategoryId",
+							rawMaterialInwardBean.getAssetCategory().getAssetCategoryId())));
+		}
+
+		return criteria.list();
+	}
+
+	@Override
+	public List<RawMaterialInwardModel> getListRawMaterialInwardByFilterAllTagHistory(
+			RawMaterialInwardBean rawMaterialInwardBean) {
+
+		SQLQuery qry;
+
+		StringBuffer sb = new StringBuffer();
+		sb.append(" select * from RawMaterialInwardHistory where  materialCodeNo=? ");
+
+		qry = sessionFactory.getCurrentSession().createSQLQuery(sb.toString());
+		int parameteIndex = 0;
+		qry.setParameter(parameteIndex++, rawMaterialInwardBean.getAssetUID());
+
+		qry.addEntity(RawMaterialInwardModel.class);
+
+		List<RawMaterialInwardModel> list = (List<RawMaterialInwardModel>) qry.list();
+
+		return list;
+
+	}
+
+	@Override
+	public int getListMaterial(String type) {
+
+		StringBuffer sb = new StringBuffer();
+		if (type != null && type.equalsIgnoreCase("TotalAsset"))
+			sb.append(" select count(*) from RawMaterialInward");
+		else if (type != null && type.equalsIgnoreCase("TotalAssetReg"))
+			sb.append("select count(*) from RawMaterialInward where len(tagID)>10 and active=1");
+		else if (type != null && type.equalsIgnoreCase("TotalAssetNotReg"))
+			sb.append("select count(*) from RawMaterialInward where tagID is null or len(tagID)<=0");
+		else if (type != null && type.equalsIgnoreCase("TotalAssetInvetoryFound"))
+			sb.append(
+					"select count(rawMaterialInwardID) from ProcessTrackingFinal where trackingSessionId in(select top 1 trackingSessionId  from TrackingSession where active=1)");
+		else if (type != null && type.equalsIgnoreCase("TotalAssetInvetoryNotFound"))
+			sb.append(
+					"select count(*) from RawMaterialInward t1 where len(t1.tagID)>0 and  rawMaterialInwardID not in(select rawMaterialInwardID from ProcessTrackingFinal where trackingSessionId in(select top 1 trackingSessionId  from TrackingSession where active=1)) and tagID is not null");
+
+		Session session = sessionFactory.getCurrentSession();
+		SQLQuery query = session.createSQLQuery(sb.toString());
+
+		Integer count = (Integer) query.uniqueResult();
+
+		return count;
+
+	}
+
+	@Override
+	public int getListMaterial(String type, Integer locationId) {
+
+		StringBuffer sb = new StringBuffer();
+		if (type != null && type.equalsIgnoreCase("TotalAsset"))
+			sb.append("select count(*) from RawMaterialInward where parentLocationId =" + locationId);
+		else if (type != null && type.equalsIgnoreCase("TotalAssetReg"))
+			sb.append("select count(*) from RawMaterialInward where len(tagID)>10 and active=1 and parentLocationId ="
+					+ locationId);
+		else if (type != null && type.equalsIgnoreCase("TotalAssetNotReg"))
+			sb.append(
+					"select count(*) from RawMaterialInward where tagID is null or len(tagID)<=0 and parentLocationId ="
+							+ locationId);
+
+		else if (type != null && type.equalsIgnoreCase("TotalAssetInvetoryFound"))
+			sb.append(
+					"select count(PTF.rawMaterialInwardID) from ProcessTrackingFinal PTF left outer join RawMaterialInward RMI on PTF.itemEpcId=rmi.tagID  where  RMI.parentLocationId="
+							+ locationId
+							+ " and trackingSessionId in(select top 1 trackingSessionId  from TrackingSession where active=1)");
+		else if (type != null && type.equalsIgnoreCase("TotalAssetInvetoryNotFound"))
+			sb.append("select count(*) from RawMaterialInward t1 where t1.parentLocationId= " + locationId
+					+ " and rawMaterialInwardID not in(select PTF.rawMaterialInwardID from ProcessTrackingFinal PTF left outer join RawMaterialInward RMI on PTF.itemEpcId=rmi.tagID  where  RMI.parentLocationId="
+					+ locationId
+					+ " and trackingSessionId in(select top 1 trackingSessionId  from TrackingSession where active=1)) and tagID is not null ");
+
+		Session session = sessionFactory.getCurrentSession();
+		SQLQuery query = session.createSQLQuery(sb.toString());
+
+		Integer count = (Integer) query.uniqueResult();
+
+		return count;
+
+	}
+}

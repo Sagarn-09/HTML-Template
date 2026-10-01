@@ -1,0 +1,438 @@
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
+
+<%@ page import="org.owasp.encoder.Encode"%>
+<%@taglib prefix="e"
+	uri="https://www.owasp.org/index.php/OWASP_Java_Encoder_Project"%>
+<spring:htmlEscape defaultHtmlEscape="true" />
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+
+</head>
+<body>
+
+	<div class="page-header navbar navbar-fixed-top">
+		<!-- BEGIN HEADER INNER -->
+		<div class="page-header-inner ">
+
+			<div class="hor-menu hidden-sm hidden-xs">
+				<ul class="nav navbar-nav">
+					<li><img
+						src="<%=request.getContextPath()%>/resource/img/ECARTES2.png"
+						alt="ATS" class="logo-default" height="38" width="80"
+						style="padding-top: 5px; padding-left: 5px;" /> <font
+						color="#ffffff"> ATS</font></li>
+					<!-- DOC: Remove data-hover="megamenu-dropdown" and data-close-others="true" attributes below to disable the horizontal opening on mouse hover -->
+					<li
+						class="${sessionScope.mm== 'Home' ? 'nav-item  active open' : 'nav-item '}">
+						<a
+						href='<%=Encode.forHtmlAttribute(((String) request.getContextPath()) + "/homePage.do?mm=Home")%>'
+						class="nav-link nav-toggle"> <i class="icon-home"></i> <span
+							class="title">Home <i class="fa fa-angle-down"></i></span> <c:choose>
+								<c:when test="${sessionScope.mm =='Home'}">
+									<span class="selected"></span>
+
+								</c:when>
+								<c:otherwise>
+									<span class="arrow"></span>
+								</c:otherwise>
+							</c:choose>
+					</a>
+					</li>
+
+					<li
+						class="${sessionScope.mm== 'User' ? 'nav-item  active' : 'nav-item  '}">
+						<a href="javascript:;" data-hover="megamenu-dropdown"
+						data-close-others="true"> <i class="fa fa-user"></i> <span
+							class="title">User <i class="fa fa-angle-down"></i></span> <c:choose>
+								<c:when test="${sessionScope.mm=='User'}">
+									<span class="selected"></span>
+
+								</c:when>
+								<c:otherwise>
+									<span class="arrow"></span>
+								</c:otherwise>
+							</c:choose>
+					</a>
+						<ul class="dropdown-menu pull-left">
+							<li class="dropdown-submenu"><a href="javascript:;"> <i
+									class="fa fa-user-plus"></i> Role
+							</a>
+								<ul class="dropdown-menu">
+									<c:if
+										test="${sessionScope.menuMasteUser.containsKey('Role Type') && sessionScope.menuMasteUser['Role Type'].insertRecord=='true'}">
+										<li
+											class="${sessionScope.ss== 'Role Type' ? 'nav-item  active open' : 'nav-item  '}">
+											<a
+											href="<%=request.getContextPath()%>/addRoleType.do?mm=User&ms=Settings&ss=Role Type"
+											class="nav-link "> <span class="title"><i
+													class="fa fa-file-o"></i> Role Type </span>
+										</a>
+										</li>
+									</c:if>
+									<c:if
+										test="${sessionScope.menuMasteUser.containsKey('Role Menu Type') && sessionScope.menuMasteUser['Role Menu Type'].insertRecord=='true'}">
+										<li
+											class="${sessionScope.ss== 'Role Menu Type' ? 'nav-item  active open' : 'nav-item  '}">
+											<a
+											href="<%=request.getContextPath()%>/addRoleMenuType.do?mm=User&ms=Settings&ss=Role Menu Type"
+											class="nav-link "> <span class="title"><i
+													class="fa fa-file-o"></i> Role Menu Type </span>
+										</a>
+										</li>
+									</c:if>
+
+									<c:if
+										test="${sessionScope.menuMasteUser.containsKey('Role Assign Type') && sessionScope.menuMasteUser['Role Assign Type'].insertRecord=='true'}">
+										<li
+											class="${sessionScope.ss== 'Role Assign Type' ? 'nav-item  active open' : 'nav-item  '}">
+											<a
+											href="<%=request.getContextPath()%>/addRoleMenu.do?mm=User&ms=Master&ss=Role Assign Type"
+											class="nav-link "> <span class="title"><i
+													class="fa fa-table"></i> Role Assign Menu </span>
+										</a>
+										</li>
+									</c:if>
+								</ul></li>
+							<li class="dropdown-submenu"><a href="javascript:;"> <i
+									class="fa fa-users"></i> User Master
+							</a>
+								<ul class="dropdown-menu">
+									<c:if
+										test="${sessionScope.menuMasteUser.containsKey('User') && sessionScope.menuMasteUser['User'].insertRecord=='true'}">
+										<li
+											class="${sessionScope.ss== 'User' ? 'nav-item  active open' : 'nav-item  '}">
+											<a
+											href="<%=request.getContextPath()%>/addLogin.do?mm=User&ms=Master&ss=User"
+											class="nav-link "> <span class="title"><i
+													class="fa fa-file-text-o"></i> Add User </span>
+										</a>
+										</li>
+									</c:if>
+
+									<c:if
+										test="${sessionScope.menuMasteUser.containsKey('User') && sessionScope.menuMasteUser['User'].displayRecord=='true'}">
+										<li
+											class="${sessionScope.ss== 'Display User' ? 'nav-item  active open' : 'nav-item  '}">
+											<a
+											href="${pageContext.request.contextPath}/displayLogin.do?mm=User&ms=Master&ss=Display User"
+											class="nav-link "> <span class="title"><i
+													class="fa fa-table"></i> Display User </span>
+										</a>
+										</li>
+									</c:if>
+
+								</ul></li>
+						</ul>
+					</li>
+
+					<li
+						class="${sessionScope.mm== 'Location' ? 'nav-item  active' : 'nav-item  '}">
+						<a href="javascript:;" data-hover="megamenu-dropdown"
+						data-close-others="true"> <i class="fa fa-map-marker"></i> <span
+							class="title">Location<i class="fa fa-angle-down"></i></span> <c:choose>
+								<c:when test="${sessionScope.mm=='Location'}">
+									<span class="selected"></span>
+
+								</c:when>
+								<c:otherwise>
+									<span class="arrow"></span>
+								</c:otherwise>
+							</c:choose>
+					</a>
+
+						<ul class="dropdown-menu pull-left">
+
+							<c:if
+								test="${sessionScope.menuMasteUser.containsKey('Item Location') && sessionScope.menuMasteUser['Item Location'].insertRecord=='true'}">
+								<li
+									class="${sessionScope.ss== 'Add Location' ? 'nav-item  active open' : 'nav-item  '}">
+									<a
+									href="<%=request.getContextPath()%>/addItemLocation.do?mm=Location&ms=Setting&ss=Add Location"
+									class="nav-link "> <span class="title"><i
+											class="fa fa-file-text-o"></i> Add Location </span>
+								</a>
+								</li>
+							</c:if>
+
+							<c:if
+								test="${sessionScope.menuMasteUser.containsKey('Item Location') && sessionScope.menuMasteUser['Item Location'].displayRecord=='true'}">
+								<li
+									class="${sessionScope.ss== 'Display Location' ? 'nav-item  active open' : 'nav-item  '}">
+									<a
+									href="${pageContext.request.contextPath}/displayItemLocation.do?mm=Location&ms=Settings&ss=Display Location"
+									class="nav-link "> <span class="title"><i
+											class="fa fa-table"></i> Display Location </span>
+								</a>
+								</li>
+							</c:if>
+						</ul>
+					</li>
+
+
+					<li
+						class="${sessionScope.mm== 'Asset Category' ? 'nav-item  active' : 'nav-item  '}">
+						<a href="javascript:;" data-hover="megamenu-dropdown"
+						data-close-others="true"> <i class="fa fa-map-marker"></i> <span
+							class="title">Asset Category<i class="fa fa-angle-down"></i></span>
+							<c:choose>
+								<c:when test="${sessionScope.mm=='Asset Category'}">
+									<span class="selected"></span>
+
+								</c:when>
+								<c:otherwise>
+									<span class="arrow"></span>
+								</c:otherwise>
+							</c:choose>
+					</a>
+
+						<ul class="dropdown-menu pull-left">
+
+							<c:if
+								test="${sessionScope.menuMasteUser.containsKey('Asset Category') && sessionScope.menuMasteUser['Asset Category'].insertRecord=='true'}">
+								<li
+									class="${sessionScope.ss== 'Asset Category' ? 'nav-item  active open' : 'nav-item  '}">
+									<a
+									href="<%=request.getContextPath()%>/addAssetCategory.do?mm=Asset Category&ms=Master&ss=Asset Category"
+									class="nav-link "> <span class="title"><i
+											class="fa fa-file-o"></i> Add Asset Category </span>
+								</a>
+								</li>
+							</c:if>
+
+							<c:if
+								test="${sessionScope.menuMasteUser.containsKey('Asset Category') && sessionScope.menuMasteUser['Asset Category'].displayRecord=='true'}">
+								<li
+									class="${sessionScope.ss== 'Display Asset Category' ? 'nav-item  active open' : 'nav-item  '}">
+									<a
+									href="${pageContext.request.contextPath}/displayAssetCategory.do?mm=Asset Category&ms=Master&ss=Display Asset Category"
+									class="nav-link "> <span class="title"><i
+											class="fa fa-table"></i> Display Asset Category </span>
+								</a>
+								</li>
+							</c:if>
+						</ul>
+					</li>
+
+					<li
+						class="${sessionScope.mm== 'Asset' ? 'nav-item  active' : 'nav-item  '}">
+						<a href="javascript:;" data-hover="megamenu-dropdown"
+						data-close-others="true"> <i class="fa fa-calendar-minus-o"></i>
+							<span class="title">Material <i class="fa fa-angle-down"></i></span>
+							<c:choose>
+								<c:when test="${sessionScope.mm=='Asset'}">
+									<span class="selected"></span>
+
+								</c:when>
+								<c:otherwise>
+									<span class="arrow"></span>
+								</c:otherwise>
+							</c:choose>
+					</a>
+						<ul class="dropdown-menu pull-left">
+
+							<c:if
+								test="${sessionScope.menuMasteUser.containsKey('RawMaterial') && sessionScope.menuMasteUser['RawMaterial'].insertRecord=='true'}">
+								<li
+									class="${sessionScope.ss== 'AddRawMaterial' ? 'nav-item  active open' : 'nav-item  '}">
+									<a
+									href="<%=request.getContextPath()%>/addRawMaterialInward.do?mm=Asset&ms=Master&ss=AddRawMaterial"
+									class="nav-link "> <span class="title"><i
+											class="fa fa-file-o"></i>Add Material </span>
+								</a>
+								</li>
+							</c:if>
+
+
+							<c:if
+								test="${sessionScope.menuMasteUser.containsKey('RawMaterial') && sessionScope.menuMasteUser['RawMaterial'].insertRecord=='true'}">
+								<li
+									class="${sessionScope.ss== 'UploadMaterial' ? 'nav-item  active open' : 'nav-item  '}">
+									<a
+									href="<%=request.getContextPath()%>/uploadMaterial.do?mm=Asset&ms=Master&ss=UploadMateriall"
+									class="nav-link "> <span class="title"><i
+											class="fa fa-file-o"></i>Upload Material </span>
+								</a>
+								</li>
+							</c:if>
+							<c:if
+								test="${sessionScope.menuMasteUser.containsKey('RawMaterial') && sessionScope.menuMasteUser['RawMaterial'].displayRecord=='true'}">
+								<li
+									class="${sessionScope.ss== 'DisplayRawMaterial' ? 'nav-item  active open' : 'nav-item  '}">
+									<a
+									href="${pageContext.request.contextPath}/displayRawMaterialInward.do?mm=Asset&ms=Master&ss=DisplayRawMaterial"
+									class="nav-link "> <span class="title"><i
+											class="fa fa-table"></i> Display Material </span>
+								</a>
+								</li>
+							</c:if>
+
+
+						</ul>
+					</li>
+
+					<li
+						class="${sessionScope.mm== 'Inventory' ? 'nav-item  active' : 'nav-item  '}">
+						<a href="javascript:;" data-hover="megamenu-dropdown"
+						data-close-others="true"> <i class="fa fa-sliders"></i> <span
+							class="title">Tracking <i class="fa fa-angle-down"></i></span> <c:choose>
+								<c:when test="${sessionScope.mm=='Inventory'}">
+									<span class="selected"></span>
+
+								</c:when>
+								<c:otherwise>
+									<span class="arrow"></span>
+								</c:otherwise>
+							</c:choose>
+					</a>
+						<ul class="dropdown-menu pull-left">
+							<c:if
+								test="${sessionScope.menuMasteUser.containsKey('Add Tracking Session') && sessionScope.menuMasteUser['Add Tracking Session'].insertRecord=='true'}">
+								<li
+									class="${sessionScope.ss== 'Add Tracking Session' ? 'nav-item  active open' : 'nav-item  '}">
+									<a
+									href="<%=request.getContextPath()%>/addTrackingSession.do?mm=Inventory&ms=Master&ss=Add Tracking Session"
+									class="nav-link "> <span class="title"><i
+											class="fa fa-file-text-o"></i> Add Tracking Session </span>
+								</a>
+								</li>
+							</c:if>
+
+							<c:if
+								test="${sessionScope.menuMasteUser.containsKey('Add Tracking Session') && sessionScope.menuMasteUser['Add Tracking Session'].displayRecord=='true'}">
+								<li
+									class="${sessionScope.ss== 'Display Tracking Session' ? 'nav-item  active open' : 'nav-item  '}">
+									<a
+									href="${pageContext.request.contextPath}/displayTrackingSession.do?mm=Inventory&ms=Master&ss=Display Tracking Session"
+									class="nav-link "> <span class="title"><i
+											class="fa fa-table"></i> Display Tracking Session </span>
+								</a>
+								</li>
+							</c:if>
+
+
+						</ul>
+					</li>
+
+
+					<li
+						class="${sessionScope.mm== 'Report' ? 'nav-item  active' : 'nav-item  '}">
+						<a href="javascript:;" data-hover="megamenu-dropdown"
+						data-close-others="true"> <i class="fa fa-sliders"></i> <span
+							class="title">Report <i class="fa fa-angle-down"></i></span> <c:choose>
+								<c:when test="${sessionScope.mm=='Report'}">
+									<span class="selected"></span>
+
+								</c:when>
+								<c:otherwise>
+									<span class="arrow"></span>
+								</c:otherwise>
+							</c:choose>
+					</a>
+						<ul class="dropdown-menu pull-left">
+
+							<c:if
+								test="${sessionScope.menuMasteUser.containsKey('Report') && sessionScope.menuMasteUser['Report'].displayRecord=='true'}">
+								<li
+									class="${sessionScope.ss== 'DisplayInventory' ? 'nav-item  active open' : 'nav-item  '}">
+									<a
+									href="${pageContext.request.contextPath}/display_inventory.do?mm=Report&ms=Master&ss=DisplayInventory"
+									class="nav-link "> <span class="title"><i
+											class="fa fa-table"></i> Inventory Found</span>
+								</a>
+								</li>
+
+								<li
+									class="${sessionScope.ss== 'DisplayNotInventory' ? 'nav-item  active open' : 'nav-item  '}">
+									<a
+									href="${pageContext.request.contextPath}/display_not_inventory.do?mm=Report&ms=Master&ss=DisplayNotInventory"
+									class="nav-link "> <span class="title"><i
+											class="fa fa-table"></i> Inventory Not Found</span>
+								</a>
+								</li>
+
+								<li
+									class="${sessionScope.ss== 'AssetScanHistory' ? 'nav-item  active open' : 'nav-item  '}">
+									<a
+									href="${pageContext.request.contextPath}/trackingByAssetID.do?mm=Report&ms=Master&ss=AssetScanHistory"
+									class="nav-link "> <span class="title"><i
+											class="fa fa-table"></i> Asset Scan History</span>
+								</a>
+								</li>
+
+								<li
+									class="${sessionScope.ss== 'Asset Master' ? 'nav-item  active open' : 'nav-item  '}">
+									<a
+									href="${pageContext.request.contextPath}/displayMaterialAllMaterial.do?mm=Report&ms=Master&ss=Asset Master"
+									class="nav-link "> <span class="title"><i
+											class="fa fa-table"></i> Asset Master</span>
+								</a>
+								</li>
+
+								<li
+									class="${sessionScope.ss== 'DisplayRawMaterialReg' ? 'nav-item  active open' : 'nav-item  '}">
+									<a
+									href="${pageContext.request.contextPath}/displayMaterialAllTagMaterial.do?mm=Report&ms=Master&ss=DisplayRawMaterialReg"
+									class="nav-link "> <span class="title"><i
+											class="fa fa-table"></i> All Registered Material </span>
+								</a>
+								</li>
+								<li
+									class="${sessionScope.ss== 'DisplayRawMaterialNotReg' ? 'nav-item  active open' : 'nav-item  '}">
+									<a
+									href="${pageContext.request.contextPath}/displayMaterialAllNotTagMaterial.do?mm=Report&ms=Master&ss=DisplayRawMaterialNotReg"
+									class="nav-link "> <span class="title"><i
+											class="fa fa-table"></i> Not Registered Material </span>
+								</a>
+								</li>
+
+							</c:if>
+
+						</ul>
+					</li>
+				</ul>
+			</div>
+
+			<a href="javascript:;" class="menu-toggler responsive-toggler"
+				data-toggle="collapse" data-target=".navbar-collapse"> </a>
+
+			<div class="top-menu">
+				<ul class="nav navbar-nav pull-right">
+
+					<li class="dropdown dropdown-user"><a href="javascript:;"
+						class="dropdown-toggle" data-toggle="dropdown"
+						data-hover="dropdown" data-close-others="true"> <img alt=""
+							class="img-circle"
+							src="<%=request.getContextPath()%>/resource/img/wwlogo3.png"
+							height="40" width="100" /> <span
+							class="username username-hide-on-mobile">
+								${sessionScope.LOGGEDIN_USER.userName} </span> <i
+							class="fa fa-angle-down"></i>
+					</a>
+						<ul class="dropdown-menu dropdown-menu-default">
+							<li><a
+								href="${pageContext.request.contextPath}/editLogin.do?loginId=${sessionScope.LOGGEDIN_USER.loginId}&mm=User&ms=Master&ss=User">
+									<i class="icon-user"></i> My Profile
+							</a></li>
+							<li><a href="<%=request.getContextPath()%>/logout.do"> <i
+									class="icon-key"></i> Log Out
+							</a></li>
+						</ul></li>
+
+					<li class="dropdown dropdown-quick-sidebar-toggler"><a
+						href="<%=request.getContextPath()%>/logout.do"
+						class="dropdown-toggle"> <i class="icon-logout"></i>
+					</a></li>
+					<!-- END QUICK SIDEBAR TOGGLER -->
+				</ul>
+			</div>
+			<!-- END TOP NAVIGATION MENU -->
+		</div>
+		<!-- END HEADER INNER -->
+	</div>
+
+</body>
+</html>

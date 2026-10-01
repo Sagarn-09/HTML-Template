@@ -1,0 +1,87 @@
+package com.ecartes.dao;
+
+import java.util.List;
+
+import org.hibernate.Criteria;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.ecartes.bean.ItemLocationSpaceBean;
+import com.ecartes.model.ItemLocationSpaceModel;
+
+@Repository("itemLocationSpaceDAO")
+public class ItemLocationSpaceDAOImpl implements ItemLocationSpaceDAO {
+	@Autowired
+	private SessionFactory sessionFactory;
+
+	@Override
+	public void addItemLocationSpace(ItemLocationSpaceModel itemLocationSpace) {
+		sessionFactory.getCurrentSession().saveOrUpdate(itemLocationSpace);
+	}
+
+	@Override
+	public List<ItemLocationSpaceModel> getListItemLocationSpace() {
+		return (List<ItemLocationSpaceModel>) sessionFactory.getCurrentSession()
+				.createCriteria(ItemLocationSpaceModel.class).list();
+	}
+
+	@Override
+	public ItemLocationSpaceModel getItemLocationSpace(Integer itemLocationSpaceId) {
+		return (ItemLocationSpaceModel) sessionFactory.getCurrentSession().get(ItemLocationSpaceModel.class,
+				itemLocationSpaceId);
+	}
+
+	@Override
+	public List<ItemLocationSpaceModel> getListItemLocationSpace(String itemLocationId) {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(ItemLocationSpaceModel.class);
+		criteria.add(Restrictions.eq("itemLocationFloor.itemLocationId", Integer.valueOf(itemLocationId)));
+		return (List<ItemLocationSpaceModel>) criteria.list();
+	}
+
+	@Override
+	public void deleteItemLocationSpace(Integer itemLocationSpaceId) {
+		sessionFactory.getCurrentSession()
+				.createQuery("DELETE FROM ItemLocationSpace WHERE itemLocationSpaceId=" + itemLocationSpaceId)
+				.executeUpdate();
+	}
+
+	@Override
+	public ItemLocationSpaceModel getItemLocationSpaceName(String itemLocationSpaceName, Integer floorId) {
+		
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(ItemLocationSpaceModel.class, "details");
+		criteria.createAlias("details.itemLocationFloor", "itemLocationFloor");
+		criteria.add(Restrictions.eq("itemLocationFloor.itemLocationId",	floorId));
+		criteria.add(Restrictions.eq("itemLocationSpaceName", itemLocationSpaceName));
+		
+		List<ItemLocationSpaceModel> list =criteria.list();
+		if (list != null && list.size() > 0)
+			return list.get(list.size() - 1);
+		return null;
+	}
+
+	@Override
+	public List<ItemLocationSpaceModel> getListSpaceLocationByFilter(ItemLocationSpaceBean itemLocationSpaceBean) {
+
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(ItemLocationSpaceModel.class, "details");
+
+		if (itemLocationSpaceBean != null && itemLocationSpaceBean.getItemLocationMain() != null
+				&& itemLocationSpaceBean.getItemLocationMain().getItemLocationId() != null
+				&& itemLocationSpaceBean.getItemLocationMain().getItemLocationId() > 0) {
+			criteria.createAlias("details.itemLocationFloor", "itemLocationFloor");
+
+			criteria.add(Restrictions.eq("itemLocationFloor.itemLocationParent.itemLocationId",	itemLocationSpaceBean.getItemLocationMain().getItemLocationId()));
+		}
+		if (itemLocationSpaceBean != null && itemLocationSpaceBean.getItemLocationFloor() != null
+				&& itemLocationSpaceBean.getItemLocationFloor().getItemLocationId() != null
+				&& itemLocationSpaceBean.getItemLocationFloor().getItemLocationId() > 0) {
+
+			criteria.add(Restrictions.eq("itemLocationFloor.itemLocationId", itemLocationSpaceBean.getItemLocationFloor().getItemLocationId()));
+
+		}
+
+		return criteria.list();
+	}
+
+}

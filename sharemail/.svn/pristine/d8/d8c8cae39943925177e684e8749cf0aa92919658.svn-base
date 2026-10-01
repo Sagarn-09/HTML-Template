@@ -1,0 +1,166 @@
+package com.ecartes.controller;
+
+import java.util.Date;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.ecartes.bean.AssetCategoryBean;
+import com.ecartes.bean.LoginBean;
+import com.ecartes.model.AssetCategoryModel;
+import com.ecartes.service.AssetCategoryService;
+import com.ecartes.validator.AssetCategoryValidator;
+
+@Controller
+public class AssetCategoryController {
+	@Autowired
+	AssetCategoryService assetCategoryService;
+	@Autowired
+	AssetCategoryValidator assetCaategoryValidator;
+
+	@ModelAttribute
+	public void addingCommonObject(Model model, HttpServletRequest request) {
+		model.addAttribute("assetCategory",
+				AssetCategoryBean.prepareListBean(assetCategoryService.getListAssetParentCategory()));
+
+	}
+
+	@InitBinder
+	public void InitBinder(WebDataBinder binder) {
+		binder.addValidators(assetCaategoryValidator);
+	}
+
+	@RequestMapping(value = "/addAssetCategory", method = RequestMethod.GET)
+	public ModelAndView addAssetCategory(@ModelAttribute("command") AssetCategoryBean assetCategoryBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = new ModelAndView("pages/assetCategory/addassetCategory");
+		assetCategoryBean.setActive(true);
+		modelAndView.addObject("assetCategoryList",
+				AssetCategoryBean.prepareListBean(assetCategoryService.getListAssetCategory()));
+		modelAndView.addObject("assetCategoryBean", assetCategoryBean);
+		return modelAndView;
+
+	}
+	
+	
+//	@RequestMapping(value = "/saveAssetCategory", method = RequestMethod.POST)
+//	public ModelAndView saveAssetCategory(@ModelAttribute("command") @Validated AssetCategoryBean assetCategoryBean,
+//			BindingResult result, HttpServletRequest request) {
+//
+//		ModelAndView modelAndView = null;
+//
+//		if (result.hasErrors()) {
+//			modelAndView = new ModelAndView("pages/assetCategory/addassetCategory");
+//			return modelAndView;
+//		}
+//
+//		LoginBean loginUser = (LoginBean) request.getSession().getAttribute("LOGGEDIN_USER");
+//		modelAndView = new ModelAndView("pages/assetCategory/displayassetCategory");
+//
+//		AssetCategoryModel model = AssetCategoryBean.prepareModel(assetCategoryBean);
+//		AssetCategoryModel existingCategory = assetCategoryService.getAssetCategoryByName(model.getAssetCategoryName());
+//
+//		if (existingCategory != null) {
+//			if (!existingCategory.getAssetCategoryId().equals(model.getAssetCategoryId())) {
+//				modelAndView = new ModelAndView("pages/assetCategory/addAssetCategory");
+//				modelAndView.addObject("assetCategoryBean", assetCategoryBean);
+//				ObjectError objectError = new ObjectError("message",
+//						"Category Name already exists under the selected parent: "
+//								+ existingCategory.getAssetCategory().getAssetCategoryName());
+//				result.addError(objectError);
+//				return modelAndView;
+//			}
+//		}
+//
+//		assetCategoryBean.setCreatedOn(new Date());
+//		assetCategoryBean.setModifyOn(new Date());
+//		assetCategoryBean.setCreatedBy(loginUser.getLoginId());
+//		assetCategoryBean.setModifyBy(loginUser.getLoginId());
+//		assetCategoryService.addAssetCategory(model);
+//
+//		modelAndView.addObject("assetCategoryList",
+//				AssetCategoryBean.prepareListBean(assetCategoryService.getListAssetCategory()));
+//		modelAndView.addObject("assetCategoryBean", assetCategoryBean);
+//
+//		return modelAndView;
+//	}
+
+
+	@RequestMapping(value = "/saveAssetCategory", method = RequestMethod.POST)
+	public ModelAndView saveAssetCategory(@ModelAttribute("command") @Validated AssetCategoryBean assetCategoryBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/assetCategory/addassetCategory");
+			return modelAndView;
+		} else {
+			LoginBean loginUser = (LoginBean) request.getSession().getAttribute("LOGGEDIN_USER");
+			modelAndView = new ModelAndView("pages/assetCategory/displayassetCategory");
+			assetCategoryBean.setCreatedOn(new java.util.Date());
+			assetCategoryBean.setModifyOn(new java.util.Date());
+			assetCategoryBean.setCreatedBy(loginUser.getLoginId());
+			assetCategoryBean.setModifyBy(loginUser.getLoginId());
+						
+			if(assetCategoryBean.getAssetCategoryId()!=null && assetCategoryBean.getAssetCategory()!=null &&  assetCategoryBean.getAssetCategory().getAssetCategoryId()!=null && assetCategoryBean.getAssetCategory().getAssetCategoryId().equals( assetCategoryBean.getAssetCategoryId()) )
+			{
+				ObjectError objectError = new ObjectError("message", "Parenet & Chield shold not same");
+				result.addError(objectError);
+			}
+			
+			assetCategoryService.addAssetCategory(AssetCategoryBean.prepareModel(assetCategoryBean));
+			modelAndView.addObject("assetCategoryList",
+					AssetCategoryBean.prepareListBean(assetCategoryService.getListAssetCategory()));
+			modelAndView.addObject("assetCategoryBean", assetCategoryBean);
+			return modelAndView;
+		}
+
+	}
+
+	@RequestMapping(value = "/displayAssetCategory", method = RequestMethod.GET)
+	public ModelAndView displayAssetCategory(@ModelAttribute("command") AssetCategoryBean assetCategoryBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/assetCategory/displayassetCategory");
+			return modelAndView;
+		} else {
+			modelAndView = new ModelAndView("pages/assetCategory/displayassetCategory");
+			modelAndView.addObject("assetCategoryList",
+					AssetCategoryBean.prepareListBean(assetCategoryService.getListAssetCategoryOnly()));
+			modelAndView.addObject("assetCategoryBean", assetCategoryBean);
+			return modelAndView;
+		}
+
+	}
+
+	@RequestMapping(value = "/editAssetCategory", method = RequestMethod.GET)
+	public ModelAndView editAssetCategory(@ModelAttribute("command") AssetCategoryBean assetCategoryBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/assetCategory/addassetCategory");
+			return modelAndView;
+		} else {
+
+			modelAndView = new ModelAndView("pages/assetCategory/addassetCategory");
+
+			modelAndView.addObject("assetCategoryBean", AssetCategoryBean
+					.prepareBean(assetCategoryService.getAssetCategory(assetCategoryBean.getAssetCategoryId())));
+
+			return modelAndView;
+		}
+
+	}
+}

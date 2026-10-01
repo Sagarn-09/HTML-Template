@@ -1,0 +1,148 @@
+package com.ecartes.model;
+import java.io.Serializable;
+import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="TrackingInventoryFinal")
+public class TrackingInventoryFinalModel implements Serializable
+{
+	private static final long serialVersionUID = -723583058586873479L;
+	@Id
+	@GeneratedValue(strategy=GenerationType.AUTO)
+	@Column(name = "trackingInventoryId")
+	private Integer trackingInventoryId=0;
+	public Integer getTrackingInventoryId()
+	{
+	 return trackingInventoryId;
+	}
+	public void  setTrackingInventoryId(Integer trackingInventoryId)
+	{
+	 this.trackingInventoryId=trackingInventoryId;
+	}
+	@ManyToOne
+	@JoinColumn(name="trackingSessionId",nullable=true)
+	private TrackingSessionModel trackingSession;
+
+	public TrackingSessionModel getTrackingSession() {
+		return trackingSession;
+	}
+	public void setTrackingSession(TrackingSessionModel trackingSession) {
+		this.trackingSession = trackingSession;
+	}
+	@ManyToOne
+	@JoinColumn(name="rawMaterialInwardID",nullable=true)
+	public RawMaterialInwardModel rawMaterialInward;
+
+
+	
+	
+	public RawMaterialInwardModel getRawMaterialInward() {
+		return rawMaterialInward;
+	}
+	public void setRawMaterialInward(RawMaterialInwardModel rawMaterialInward) {
+		this.rawMaterialInward = rawMaterialInward;
+	}
+	@ManyToOne
+	@JoinColumn(name="itemLocationId",nullable=true)
+	ItemLocationModel itemLocation=null;
+	
+
+	public ItemLocationModel getItemLocation() {
+		return itemLocation;
+	}
+	public void setItemLocation(ItemLocationModel itemLocation) {
+		this.itemLocation = itemLocation;
+	}
+	@Column(name = "itemEpcId")
+	private String  itemEpcId=null;
+
+
+	public String getItemEpcId() {
+		return itemEpcId;
+	}
+	public void setItemEpcId(String itemEpcId) {
+		this.itemEpcId = itemEpcId;
+	}
+	
+	@Column(name = "deviceSerialNo")
+	private String  deviceSerialNo=null;
+	public String getDeviceSerialNo() {
+		return deviceSerialNo;
+	}
+	public void setDeviceSerialNo(String deviceSerialNo) {
+		this.deviceSerialNo = deviceSerialNo;
+	}
+	@Column(name = "status")
+	private String  status=null;
+	public String getStatus()
+	{
+	 return status;
+	}
+	public void  setStatus(String status)
+	{
+	 this.status=status;
+	}
+	
+	@Column(name="createdBy")
+	private Integer createdBy=null;
+	
+	
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+	@Column(name = "createdOn", nullable = true, updatable=true)		
+	private Date  createdOn=null;
+	public Date getCreatedOn()
+	{
+	 return createdOn;
+	}
+	public void  setCreatedOn(Date createdOn)
+	{
+	 this.createdOn=createdOn;
+	}
+	@Column(name="modifyBy")
+	private Integer modifyBy=null;
+	
+	
+	public Integer getModifyBy() {
+		return modifyBy;
+	}
+	public void setModifyBy(Integer modifyBy) {
+		this.modifyBy = modifyBy;
+	}
+	@Column(name = "modifyOn", nullable = true, updatable=true)
+	private Date  modifyOn=null;
+	public Date getModifyOn()
+	{
+	 return modifyOn;
+	}
+	public void  setModifyOn(Date modifyOn)
+	{
+	 this.modifyOn=modifyOn;
+	}
+	@Column(name = "active")
+	private Boolean  active=false;
+	public Boolean getActive()
+	{
+	 return active;
+	}
+	public void  setActive(Boolean active)
+	{
+	 this.active=active;
+	}
+
+	
+
+	}
