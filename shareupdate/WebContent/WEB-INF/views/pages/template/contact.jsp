@@ -170,16 +170,16 @@
         </c:if> 
 
         <div class="col-md-6">
-            <input type="text" name="name" class="form-control border-0 bg-light px-4" placeholder="Your Name" style="height: 55px;" required>
+            <input type="text" name="name" class="form-control border-0 bg-light px-4" placeholder="Your Name" style="height: 55px;" autocomplete="off" required>
         </div>
         <div class="col-md-6">
-            <input type="email" name="email" class="form-control border-0 bg-light px-4" placeholder="Your Email" style="height: 55px;" required>
+            <input type="email" name="email" class="form-control border-0 bg-light px-4" placeholder="Your Email" style="height: 55px;" autocomplete="off" required>
         </div>
         <div class="col-12">
-            <input type="text" name="subject" class="form-control border-0 bg-light px-4" placeholder="Subject" style="height: 55px;" required>
+            <input type="text" name="subject" class="form-control border-0 bg-light px-4" placeholder="Subject" style="height: 55px;" autocomplete="off" required>
         </div>
         <div class="col-12">
-            <textarea name="message" class="form-control border-0 bg-light px-4 py-3" rows="4" placeholder="Message" required></textarea>
+            <textarea name="message" class="form-control border-0 bg-light px-4 py-3" rows="4" placeholder="Message" autocomplete="off" required></textarea>
         </div>
         <div class="col-12">
             <button class="btn btn-primary w-100 py-3" type="submit">Send Message</button>
@@ -242,8 +242,6 @@
 		class="bi bi-arrow-up"></i></a>
 
 
-	<meta name="_csrf" content="${_csrf.token}" />
-	<meta name="_csrf_header" content="${_csrf.headerName}" />
 
 	<!-- JavaScript Libraries -->
 	<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>

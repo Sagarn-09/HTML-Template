@@ -340,19 +340,19 @@
 			<version>2.7.0</version>
 		</dependency>
 
-		<dependency>
+	<!-- Also ensure you have the Spring context support for mail -->
+	
+	<!--	<dependency>
 			<groupId>com.sun.mail</groupId>
 			<artifactId>javax.mail</artifactId>
 			<version>1.6.2</version>
 		</dependency>
 
-		<!-- Also ensure you have the Spring context support for mail -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context-support</artifactId>
-			<version>5.3.29</version> <!-- Match this to your current Spring
-			version -->
-		</dependency>
+			<version>5.3.29</version> 
+		</dependency>-->
 
 	</dependencies>
 

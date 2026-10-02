@@ -32,5 +32,8 @@
 	<classpathentry kind="lib" path="D:/Software/Java/ecartes/ragiglobal/WebContent/WEB-INF/lib/poi-ooxml-3.9-20121203.jar"/>
 	<classpathentry kind="lib" path="D:/Software/Java/ecartes/ragiglobal/WebContent/WEB-INF/lib/poi-ooxml-schemas-3.9-20121203.jar"/>
 	<classpathentry kind="lib" path="D:/Software/Java/ecartes/ragiglobal/WebContent/WEB-INF/lib/xmlbeans-2.3.0.jar"/>
+	<classpathentry kind="lib" path="D:/Software/Java/ecartes/ragiglobal/WebContent/WEB-INF/lib/javax.mail-1.6.2.jar"/>
+	<classpathentry kind="lib" path="D:/Software/Java/ecartes/ragiglobal/WebContent/WEB-INF/lib/spring-context-support-5.3.29.jar"/>
+	<classpathentry kind="lib" path="D:/Software/Java/ecartes/ragiglobal/WebContent/WEB-INF/lib/javax.activation-1.2.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
