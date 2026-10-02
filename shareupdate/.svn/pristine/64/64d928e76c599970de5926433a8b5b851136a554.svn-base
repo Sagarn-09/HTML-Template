@@ -1,0 +1,15 @@
+package com.ecartes.dao;
+
+import java.util.List;
+
+import com.ecartes.model.RoleTypeModel;
+
+public interface RoleTypeDAO {
+	public void addRoleType(RoleTypeModel roleType);
+
+	public List<RoleTypeModel> getListRoleType();
+
+	public RoleTypeModel getRoleType(Integer roleId);
+
+	public void deleteRoleType(Integer roleId);
+}

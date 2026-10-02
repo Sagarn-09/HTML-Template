@@ -1,0 +1,200 @@
+package com.ecartes.bean;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
+
+import com.ecartes.model.RoleTypeModel;
+public class RoleTypeBean implements Serializable
+{
+private static final long serialVersionUID = -723583058586873479L;
+private Integer roleId=0;
+private Integer roleSequece=0;
+public Integer getRoleSequece() {
+	return roleSequece;
+}
+public void setRoleSequece(Integer roleSequece) {
+	this.roleSequece = roleSequece;
+}
+public Integer getRoleId()
+{
+ return roleId;
+}
+public void  setRoleId(Integer roleId)
+{
+ this.roleId=roleId;
+}
+
+private String  createdOnUtc=null;
+private String  modifyOnUtc=null;
+public String getCreatedOnUtc() {
+	return createdOnUtc;
+}
+public void setCreatedOnUtc(String createdOnUtc) {
+	this.createdOnUtc = createdOnUtc;
+}
+public String getModifyOnUtc() {
+	return modifyOnUtc;
+}
+public void setModifyOnUtc(String modifyOnUtc) {
+	this.modifyOnUtc = modifyOnUtc;
+}
+
+private String  roleName=null;
+public String getRoleName()
+{
+ return roleName;
+}
+public void  setRoleName(String roleName)
+{
+ this.roleName=roleName;
+}
+private Integer createdBy=0;
+public Integer getCreatedBy()
+{
+ return createdBy;
+}
+public void  setCreatedBy(Integer createdBy)
+{
+ this.createdBy=createdBy;
+}
+private Date  createdOn=null;
+public Date getCreatedOn()
+{
+ return createdOn;
+}
+public void  setCreatedOn(Date createdOn)
+{
+ this.createdOn=createdOn;
+}
+private Integer modifyBy=0;
+public Integer getModifyBy()
+{
+ return modifyBy;
+}
+public void  setModifyBy(Integer modifyBy)
+{
+ this.modifyBy=modifyBy;
+}
+private Date  modifyOn=null;
+public Date getModifyOn()
+{
+ return modifyOn;
+}
+public void  setModifyOn(Date modifyOn)
+{
+ this.modifyOn=modifyOn;
+}
+private Boolean  active=false;
+public Boolean getActive()
+{
+ return active;
+}
+public void  setActive(Boolean active)
+{
+ this.active=active;
+}
+private Boolean successFlag=null;
+public Boolean getSuccessFlag()
+{
+ return successFlag;
+}
+public void  setSuccessFlag(Boolean successFlag)
+{
+ this.successFlag=successFlag;
+}
+
+private String message =null;
+public String getMessage()
+{
+ return message;
+}
+public void  setMessage(String message)
+{
+ this.message=message;
+}
+private String callingPage =null;
+public String getCallingPage()
+{
+ return callingPage;
+}
+public void  setCallingPage(String callingPage)
+{
+ this.callingPage=callingPage;
+}
+
+private String operation =null;
+public String getOperation()
+{
+ return operation;
+}
+public void  setOperation(String operation)
+{
+ this.operation=operation;
+}
+public static RoleTypeModel prepareModel(RoleTypeBean bean)
+{
+RoleTypeModel model=new RoleTypeModel();
+model.setRoleId(bean.getRoleId());
+model.setRoleName(bean.getRoleName());
+model.setCreatedBy(bean.getCreatedBy());
+model.setCreatedOn(bean.getCreatedOn());
+model.setModifyBy(bean.getModifyBy());
+model.setModifyOn(bean.getModifyOn());
+model.setActive(bean.getActive());
+model.setRoleSequece(bean.getRoleSequece());
+//if(bean.getCreatedOnUtc()!=null)
+//	model.setCreatedOn(Common.getDateFromUtcFormat(bean.getCreatedOnUtc()));
+//if(bean.getModifyOnUtc()!=null)
+//	model.setModifyOn(Common.getDateFromUtcFormat(bean.getModifyOnUtc()));
+return model;
+}
+
+
+public static RoleTypeBean prepareBean(RoleTypeModel model)
+{
+RoleTypeBean bean=new RoleTypeBean();
+bean.setRoleId(model.getRoleId());
+bean.setRoleName(model.getRoleName());
+bean.setCreatedBy(model.getCreatedBy());
+bean.setCreatedOn(model.getCreatedOn());
+bean.setModifyBy(model.getModifyBy());
+bean.setModifyOn(model.getModifyOn());
+bean.setActive(model.getActive());
+bean.setRoleSequece(model.getRoleSequece());
+//if(model.getCreatedOn()!=null)
+//	bean.setCreatedOnUtc(Common.getUtcFormat(model.getCreatedOn()));
+//if(model.getModifyOn()!=null)
+//	bean.setModifyOnUtc(Common.getUtcFormat(model.getModifyOn()));
+return bean;
+}
+
+public static List<RoleTypeBean> prepareListBean(List<RoleTypeModel> listModel)
+{
+List<RoleTypeBean> beans=null;
+
+if(listModel!=null && !listModel.isEmpty())
+{
+beans=new ArrayList<RoleTypeBean>();
+for(RoleTypeModel model : listModel)
+{
+	
+beans.add(prepareBean(model));
+}
+}
+return beans;
+}
+public static List<RoleTypeModel> prepareListModel(List<RoleTypeBean> beans)
+{
+List<RoleTypeModel> listModel=null;
+if(beans!=null && !beans.isEmpty())
+{
+listModel=new ArrayList<RoleTypeModel>();
+for(RoleTypeBean bean : beans)
+{
+listModel.add(prepareModel(bean));
+}
+}
+return listModel;
+}
+}

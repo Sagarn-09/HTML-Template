@@ -1,0 +1,182 @@
+package com.ecartes.controller;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+
+import com.ecartes.bean.ItemLocationBean;
+import com.ecartes.bean.ItemLocationSpaceBean;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+import com.ecartes.bean.LoginBean;
+import com.ecartes.model.ItemLocationSpaceModel;
+import com.ecartes.service.ItemLocationService;
+import com.ecartes.service.ItemLocationSpaceService;
+import com.ecartes.validator.ItemSpaceLocationValidator;
+
+@Controller
+public class ItemLocationSpaceController {
+
+	@Autowired
+	ItemLocationSpaceService itemLocationSpaceService;
+
+	@Autowired
+	ItemLocationService itemLocationService;
+
+	@Autowired
+	ItemSpaceLocationValidator itemSpaceLocationValidator;
+
+	@ModelAttribute
+	public void addingCommonObject(Model model, HttpServletRequest request) {
+
+		model.addAttribute("binLocationList",
+				ItemLocationBean.prepareListBean(itemLocationService.getListItemLocationAll()));
+
+		model.addAttribute("binLocationMainList",
+				ItemLocationBean.prepareListBean(itemLocationService.getListItemLocationParent()));
+
+		model.addAttribute("binLocationFloorList",
+				ItemLocationBean.prepareListBean(itemLocationService.getListItemLocationOnly()));
+
+	}
+
+	@InitBinder
+	public void InitBinder(WebDataBinder binder) {
+
+		binder.addValidators(itemSpaceLocationValidator);
+	}
+
+	@RequestMapping(value = "/addItemLocationSpace", method = RequestMethod.GET)
+	public ModelAndView addItemLocationSpace(@ModelAttribute("command") ItemLocationSpaceBean itemLocationSpaceBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = new ModelAndView("pages/itemLocation/additemLocationSpace");
+		itemLocationSpaceBean.setActive(true);
+		modelAndView.addObject("itemLocationSpaceBean", itemLocationSpaceBean);
+		return modelAndView;
+
+	}
+
+	@RequestMapping(value = "/saveItemLocationSpace", method = RequestMethod.POST)
+	public ModelAndView saveItemLocationSpace(
+			@ModelAttribute("command") @Validated ItemLocationSpaceBean itemLocationSpaceBean, BindingResult result,
+			HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/itemLocation/additemLocationSpace");
+			return modelAndView;
+		} else {
+			LoginBean loginUser = (LoginBean) request.getSession().getAttribute("LOGGEDIN_USER");
+			modelAndView = new ModelAndView("pages/itemLocation/displayitemLocationSpace");
+			
+			ItemLocationSpaceModel model = ItemLocationSpaceBean.prepareModel(itemLocationSpaceBean);
+
+			ItemLocationSpaceModel itemLocationSpaceModel = null;
+
+			if ( itemLocationSpaceBean.getItemLocationSpaceName() != null
+					&& itemLocationSpaceBean.getItemLocationSpaceName().length() > 0) {				
+				
+				itemLocationSpaceModel = itemLocationSpaceService.getItemLocationSpaceName(model.getItemLocationSpaceName(),itemLocationSpaceBean.getItemLocationFloor().getItemLocationId() );
+				
+				if (itemLocationSpaceModel != null ) 
+				{
+					
+					modelAndView = new ModelAndView("pages/itemLocation/additemLocationSpace");
+					modelAndView.addObject("itemLocationSpaceBean", itemLocationSpaceBean);
+					ObjectError objectError = new ObjectError("message",
+							"Space Name already registered with Building/Floor "
+									+ itemLocationSpaceModel.getItemLocationFloor().getItemLocationParent()
+											.getItemLocationName()
+									+ " / " + itemLocationSpaceModel.getItemLocationFloor().getItemLocationName());
+					result.addError(objectError);
+					return modelAndView;
+				} else
+					itemLocationSpaceModel = null;
+
+			}
+
+			itemLocationSpaceBean.setCreatedOn(new java.util.Date());
+			itemLocationSpaceBean.setModifyOn(new java.util.Date());
+			itemLocationSpaceBean.setCreatedBy(loginUser.getLoginId());
+			itemLocationSpaceBean.setModifyBy(loginUser.getLoginId());
+			itemLocationSpaceService.addItemLocationSpace(ItemLocationSpaceBean.prepareModel(itemLocationSpaceBean));
+
+			modelAndView.addObject("itemLocationSpaceList",
+					ItemLocationSpaceBean.prepareListBean(itemLocationSpaceService.getListItemLocationSpace()));
+			
+//			List<ItemLocationSpaceBean> list = new ArrayList<ItemLocationSpaceBean>();
+//			list.add(ItemLocationSpaceBean.prepareBean(model));
+//			modelAndView.addObject("itemLocationSpaceList", list);			
+			
+			modelAndView.addObject("itemLocationSpaceBean", itemLocationSpaceBean);
+			return modelAndView;
+		}
+
+	}
+	
+	@RequestMapping(value = "/displayItemLocationSpace", method = { RequestMethod.GET, RequestMethod.POST })
+	public ModelAndView displayItemLocationSpace(@ModelAttribute("command") ItemLocationSpaceBean itemLocationSpaceBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/itemLocation/displayitemLocationSpace");
+			return modelAndView;
+		} else {
+
+			modelAndView = new ModelAndView("pages/itemLocation/displayitemLocationSpace");
+
+			List<ItemLocationSpaceBean> list = null;
+
+			if (request.getMethod().equalsIgnoreCase("POST")) {
+
+				list = ItemLocationSpaceBean
+						.prepareListBean(itemLocationSpaceService.getListSpaceLocationByFilter(itemLocationSpaceBean));
+			}
+//			else
+//				list = ItemLocationSpaceBean.prepareListBean(itemLocationSpaceService.getListItemLocationSpace());
+
+			modelAndView.addObject("itemLocationSpaceList", list);
+
+//			modelAndView.addObject("itemLocationSpaceList",
+//					ItemLocationSpaceBean.prepareListBean(itemLocationSpaceService.getListItemLocationSpace()));
+
+			modelAndView.addObject("itemLocationSpaceBean", itemLocationSpaceBean);
+			return modelAndView;
+		}
+
+	}
+
+	@RequestMapping(value = "/editItemLocationSpace", method = RequestMethod.GET)
+	public ModelAndView editItemLocationSpace(@ModelAttribute("command") ItemLocationSpaceBean itemLocationSpaceBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/itemLocation/edititemLocationSpace");
+			return modelAndView;
+		} else {
+
+			modelAndView = new ModelAndView("pages/itemLocation/edititemLocationSpace");
+
+//			modelAndView.addObject("itemLocationSpaceBean", ItemLocationSpaceBean.prepareBean(
+//					itemLocationSpaceService.getItemLocationSpace(itemLocationSpaceBean.getItemLocationSpaceId())));
+			
+			ItemLocationSpaceBean itemLocationSpaceBean1 = ItemLocationSpaceBean.prepareBean(
+					itemLocationSpaceService.getItemLocationSpace(itemLocationSpaceBean.getItemLocationSpaceId()));
+			
+			modelAndView.addObject("itemLocationSpaceBean", itemLocationSpaceBean1 );
+						
+			return modelAndView;
+		}
+
+	}
+
+}

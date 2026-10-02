@@ -1,0 +1,499 @@
+package com.ecartes.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.context.annotation.ComponentScan;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
+
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import com.ecartes.bean.AssetCategoryBean;
+import com.ecartes.bean.BulkProcessHH;
+import com.ecartes.bean.ItemLocationBean;
+import com.ecartes.bean.ItemLocationSpaceBean;
+import com.ecartes.bean.LoginBean;
+import com.ecartes.bean.MaterailBeanList;
+import com.ecartes.bean.RawMaterialInwardBean;
+import com.ecartes.model.AssetCategoryModel;
+import com.ecartes.model.LoginModel;
+import com.ecartes.model.RawMaterialInwardModel;
+import com.ecartes.model.RawMaterialInwardModelHistory;
+import com.ecartes.service.AssetCategoryService;
+import com.ecartes.service.ItemLocationService;
+import com.ecartes.service.ItemLocationSpaceService;
+import com.ecartes.service.LoginService;
+import com.ecartes.service.RawMaterialInwardService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+@CrossOrigin(maxAge = 3600)
+@ComponentScan("com.ecartes")
+@RestController
+@RequestMapping(value = "/rfid")
+public class WSAssetTrackingController {
+	@Autowired
+	LoginService loginService;
+	@Autowired
+	RawMaterialInwardService rawMaterialInwardService;
+	@Autowired
+	ItemLocationService itemLocationService;
+	@Autowired
+	AssetCategoryService assetCategoryService;
+	@Autowired
+	ItemLocationSpaceService itemLocationSpaceService;
+
+	@RequestMapping(value = "/assetByID", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String assetByID() {
+
+		System.out.println("assetByID epc=");
+		String json = "";
+
+		json = "BEGIN:VCARD\r\n" + "VERSION:3.0\r\n" + "N:lakade;kailas\r\n" + "ORG:Ecartes Technology\r\n"
+				+ "TITLE:Project Manager\r\n" + "EMAIL;TYPE=INTERNET:kailas.lakde@ecartes.in\r\n"
+				+ "URL:https://ecartes.in/\r\n" + "TEL:8108700391\r\n"
+				+ "ADR:;;;506\\, GOLD CREST BUSINESS PARK\\, KAILAS ESPLANAD LBS MARG\\,  GHATKOPAR  Mumbai\\, 400086;;;India\r\n"
+				+ "END:VCARD";
+
+		System.out.println("json" + json);
+
+		return json;
+	}
+
+	@RequestMapping(value = "/getspaceNameList", method = RequestMethod.GET)
+	@ResponseStatus(org.springframework.http.HttpStatus.OK)
+	public @ResponseBody List<ItemLocationSpaceBean> getItemLocationSpaceBean(
+			@RequestParam(value = "locationID", required = true) String locationID) {
+
+		List<ItemLocationSpaceBean> list = null;
+
+		try {
+			list = ItemLocationSpaceBean.prepareListBean(itemLocationSpaceService.getListItemLocationSpace(locationID));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+
+	@RequestMapping(value = "/getfloorNameList", method = RequestMethod.GET)
+	@ResponseStatus(org.springframework.http.HttpStatus.OK)
+	public @ResponseBody List<ItemLocationBean> getItemLocationFloorBean(
+			@RequestParam(value = "locationID", required = true) Integer locationID) {
+
+		List<ItemLocationBean> list = null;
+
+		try {
+			list = ItemLocationBean.prepareListBean(itemLocationService.getListItemLocationParent(locationID));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return list;
+	}
+
+	@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String loginHH(HttpEntity<String> httpEntity) {
+		System.out.println("loginHH");
+		String json1 = httpEntity.getBody();
+		JSONObject jsonObject = null;
+		String json = "";
+		JSONParser parser = new JSONParser();
+		try {
+			System.out.println("json1" + json1);
+			jsonObject = (JSONObject) parser.parse(json1);
+			String uId = "";
+			String password = "";
+			String parentLocationId = null;
+			String createdOnUtc = "";
+
+			if (jsonObject.containsKey("userLoginId") && jsonObject.containsKey("password")
+					&& jsonObject.containsKey("locationId")) {
+
+				uId = (String) jsonObject.get("userLoginId");
+				password = (String) jsonObject.get("password");
+				parentLocationId = (String) jsonObject.get("locationId");
+				if (jsonObject.containsKey("createdOnUtc"))
+					createdOnUtc = (String) jsonObject.get("createdOnUtc");
+				LoginBean login = LoginBean.prepareBean(loginService.getLogin(uId, password));
+				ObjectMapper objectMapper = new ObjectMapper();
+
+				try {
+					RawMaterialInwardBean rawMaterialInwardBean = new RawMaterialInwardBean();
+					if (createdOnUtc != null && createdOnUtc.length() > 0) {
+						rawMaterialInwardBean.setFromDate(new Date(Long.valueOf(createdOnUtc)));
+					}
+
+					rawMaterialInwardBean.setParentLocationId(Integer.valueOf(parentLocationId));
+
+					List<RawMaterialInwardBean> list = RawMaterialInwardBean.prepareListBean(
+							rawMaterialInwardService.getListRawMaterialInwardActiveIncremental(rawMaterialInwardBean));
+					MaterailBeanList materailBeanList = new MaterailBeanList();
+
+					materailBeanList.setLocationBeanList(
+							ItemLocationBean.prepareListBean(itemLocationService.getListItemLocationAll()));
+
+					materailBeanList.setAssetCategoryBeanList(
+							AssetCategoryBean.prepareListBean(assetCategoryService.getListAssetCategory()));
+
+					materailBeanList.setLocationSpaceBeanList(
+							ItemLocationSpaceBean.prepareListBean(itemLocationSpaceService.getListItemLocationSpace()));
+
+					materailBeanList.setMaterailBeanList(list);
+					json = objectMapper.writeValueAsString(materailBeanList);
+					login.setMessage(json);
+					login.setCreatedOnUtc("" + System.currentTimeMillis());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+				json = objectMapper.writeValueAsString(login);
+				System.out.println("json" + json);
+			}
+
+		} catch (ParseException e) {
+
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return json;
+	}
+
+	@RequestMapping(value = "/operationData", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String operationData(HttpEntity<String> httpEntity) {
+		System.out.println("operationData");
+		String json1 = httpEntity.getBody();
+		String json = "";
+
+		try {
+
+			ObjectMapper objectMapper = new ObjectMapper();
+			System.out.println("json1  operationData" + json1);
+
+			BulkProcessHH bulkProcessHH = objectMapper.readValue(json1, BulkProcessHH.class);
+
+			rawMaterialInwardService.postData(bulkProcessHH);
+			bulkProcessHH.setTagList("");
+			bulkProcessHH.setProcessName("Successfully uploded");
+			json = objectMapper.writeValueAsString(bulkProcessHH);
+			System.out.println("Post Data" + json);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return json;
+	}
+
+	@RequestMapping(value = "/rawMaterialData", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String rawMaterialData(HttpEntity<String> httpEntity) {
+
+		String json1 = httpEntity.getBody();
+		String json = "";
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		try {
+			RawMaterialInwardBean rawMaterialInwardBean = objectMapper.readValue(json1, RawMaterialInwardBean.class);
+
+			String operation = rawMaterialInwardBean.getOperation();
+			String callingPage = rawMaterialInwardBean.getCallingPage();
+			if (operation != null && operation.equalsIgnoreCase("Upload") && callingPage.equalsIgnoreCase("new")) {
+				RawMaterialInwardBean rawMaterialInwardBeanCheck = RawMaterialInwardBean
+						.prepareBean(rawMaterialInwardService.getRawMaterialInward(rawMaterialInwardBean.getTagID()));
+				if (rawMaterialInwardBeanCheck == null || !rawMaterialInwardBeanCheck.getActive()) {
+					RawMaterialInwardModel rawMaterial = rawMaterialInwardService
+							.getRawMaterialInwardByMaterialCode(rawMaterialInwardBean.getAssetUID());
+					if (rawMaterial == null) {
+
+						RawMaterialInwardModel model = RawMaterialInwardBean.prepareModel(rawMaterialInwardBean);
+						rawMaterialInwardService.addRawMaterialInward(model);
+						rawMaterialInwardBean = RawMaterialInwardBean.prepareBean(model);
+						rawMaterialInwardBean.setSuccessFlag(true);
+						rawMaterialInwardBean.setOperation(operation);
+						rawMaterialInwardBean.setCallingPage(callingPage);
+						rawMaterialInwardBean.setMessage("Data uploaded successfully!");
+						json = objectMapper.writeValueAsString(rawMaterialInwardBean);
+					} else {
+						rawMaterialInwardBean.setMessage("Material Code Already Exit!");
+						rawMaterialInwardBean.setSuccessFlag(false);
+						rawMaterialInwardBean.setOperation(operation);
+						rawMaterialInwardBean.setCallingPage(callingPage);
+						json = objectMapper.writeValueAsString(rawMaterialInwardBean);
+					}
+				} else {
+					System.out.println("Tag already in use");
+					rawMaterialInwardBean.setMessage("Tag already in use");
+					rawMaterialInwardBean.setSuccessFlag(false);
+					rawMaterialInwardBean.setOperation(operation);
+					rawMaterialInwardBean.setCallingPage(callingPage);
+					json = objectMapper.writeValueAsString(rawMaterialInwardBean);
+				}
+
+			} else if (operation != null && operation.equalsIgnoreCase("Upload")
+					&& callingPage.equalsIgnoreCase("old")) {
+				RawMaterialInwardModel model = rawMaterialInwardService
+						.getRawMaterialInward(rawMaterialInwardBean.getTagID());
+				if (model != null) {
+					LoginModel loginMode = new LoginModel();
+					loginMode.setLoginId(rawMaterialInwardBean.getCreatedBy());
+					model.setModifyBy(loginMode);
+					model.setModifyOn(rawMaterialInwardBean.getModifyOn());
+					rawMaterialInwardService.addRawMaterialInward(model);
+					rawMaterialInwardBean = RawMaterialInwardBean.prepareBean(model);
+					rawMaterialInwardBean.setOperation(operation);
+					rawMaterialInwardBean.setCallingPage(callingPage);
+					rawMaterialInwardBean.setSuccessFlag(true);
+					rawMaterialInwardBean.setMessage("Data uploaded successfully!");
+					json = objectMapper.writeValueAsString(rawMaterialInwardBean);
+
+				} else {
+					rawMaterialInwardBean = new RawMaterialInwardBean();
+					rawMaterialInwardBean.setOperation(operation);
+					rawMaterialInwardBean.setCallingPage(callingPage);
+					rawMaterialInwardBean.setSuccessFlag(false);
+					rawMaterialInwardBean.setMessage("Data not uploaded!");
+					json = objectMapper.writeValueAsString(rawMaterialInwardBean);
+				}
+			} else if (operation != null && operation.equalsIgnoreCase("Upload")
+					&& callingPage.equalsIgnoreCase("outward")) {
+				RawMaterialInwardModel model = rawMaterialInwardService
+						.getRawMaterialInward(rawMaterialInwardBean.getTagID());
+				if (model != null) {
+
+					LoginModel loginMode = new LoginModel();
+					loginMode.setLoginId(rawMaterialInwardBean.getCreatedBy());
+					model.setModifyBy(loginMode);
+					model.setModifyOn(rawMaterialInwardBean.getModifyOn());
+					rawMaterialInwardService.addRawMaterialInward(model);
+					rawMaterialInwardBean = RawMaterialInwardBean.prepareBean(model);
+					rawMaterialInwardBean.setOperation(operation);
+					rawMaterialInwardBean.setCallingPage(callingPage);
+					rawMaterialInwardBean.setSuccessFlag(true);
+					rawMaterialInwardBean.setMessage("Data uploaded successfully!");
+					json = objectMapper.writeValueAsString(rawMaterialInwardBean);
+
+				} else {
+					rawMaterialInwardBean = new RawMaterialInwardBean();
+					rawMaterialInwardBean.setOperation(operation);
+					rawMaterialInwardBean.setCallingPage(callingPage);
+					rawMaterialInwardBean.setSuccessFlag(false);
+					rawMaterialInwardBean.setMessage("Data not uploaded!");
+					json = objectMapper.writeValueAsString(rawMaterialInwardBean);
+				}
+			} else if (operation != null && operation.equalsIgnoreCase("Upload")
+					&& callingPage.equalsIgnoreCase("Registration")) {
+				System.out.println("getRawMaterialInwardID" + rawMaterialInwardBean.getRawMaterialInwardID());
+				RawMaterialInwardModel model = rawMaterialInwardService
+						.getRawMaterialInward(rawMaterialInwardBean.getRawMaterialInwardID());
+				if (model != null) {
+
+					LoginModel loginMode = new LoginModel();
+					loginMode.setLoginId(rawMaterialInwardBean.getCreatedBy());
+					model.setModifyBy(loginMode);
+					model.setTagID(rawMaterialInwardBean.getTagID());
+					model.setModifyOn(rawMaterialInwardBean.getModifyOn());
+//					 model.setRegistrationDate(new Date());
+					model.setActive(true);
+					rawMaterialInwardService.addRawMaterialInward(model);
+					rawMaterialInwardBean = RawMaterialInwardBean.prepareBean(model);
+					rawMaterialInwardBean.setOperation(operation);
+					rawMaterialInwardBean.setCallingPage(callingPage);
+					rawMaterialInwardBean.setSuccessFlag(true);
+					rawMaterialInwardBean.setAssetCategory(null);
+					rawMaterialInwardBean.setMessage("Data uploaded successfully!");
+					json = objectMapper.writeValueAsString(rawMaterialInwardBean);
+
+					RawMaterialInwardModelHistory modelHistory = RawMaterialInwardBean
+							.prepareModelHistory(RawMaterialInwardBean.prepareBean(model));
+
+					rawMaterialInwardService.addRawMaterialInwardHistory(modelHistory);
+					System.out.println("Post Data Old Raw Material");
+				} else {
+					rawMaterialInwardBean = new RawMaterialInwardBean();
+					rawMaterialInwardBean.setOperation(operation);
+					rawMaterialInwardBean.setCallingPage(callingPage);
+					rawMaterialInwardBean.setSuccessFlag(false);
+					rawMaterialInwardBean.setMessage("Data not uploaded!");
+					json = objectMapper.writeValueAsString(rawMaterialInwardBean);
+				}
+			} else if (operation != null && operation.equalsIgnoreCase("Download")) {
+				rawMaterialInwardBean = RawMaterialInwardBean
+						.prepareBean(rawMaterialInwardService.getRawMaterialInward(rawMaterialInwardBean.getTagID()));
+				if (rawMaterialInwardBean != null) {
+					rawMaterialInwardBean.setOperation(operation);
+					rawMaterialInwardBean.setCallingPage(callingPage);
+					rawMaterialInwardBean.setSuccessFlag(true);
+					rawMaterialInwardBean.setMessage("Data downloded successfully!");
+					json = objectMapper.writeValueAsString(rawMaterialInwardBean);
+
+				} else {
+					rawMaterialInwardBean = new RawMaterialInwardBean();
+					rawMaterialInwardBean.setOperation(operation);
+					rawMaterialInwardBean.setCallingPage(callingPage);
+					rawMaterialInwardBean.setSuccessFlag(false);
+					rawMaterialInwardBean.setMessage("Data not availabled for scaned ECP!");
+					json = objectMapper.writeValueAsString(rawMaterialInwardBean);
+					System.out.println("Download Data not available scaned EPC" + json);
+				}
+			}
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+		System.out.println("json" + json);
+		return json;
+	}
+
+	
+	
+	
+	@RequestMapping(value = "/rawMaterialOutward", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String rawMaterialOutward(HttpEntity<String> httpEntity) {
+
+		String json1 = httpEntity.getBody();
+		System.out.println("json1/rawMaterialOutward" + json1);
+				
+		String json = "";
+		
+		json = "{\r\n" + 
+	              "\"message\":\"Success!\",\r\n" + 
+	              "\"operation\":\"Outward\"\r\n" + 
+	              "}";
+		
+		System.out.println("json" + json);		
+		return json;
+	}
+	
+	@RequestMapping(value = "/rawMaterialRegister", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String rawMaterialRegister(HttpEntity<String> httpEntity) {
+		System.out.println("json1rawMaterialInward call");
+		String json1 = httpEntity.getBody();
+		System.out.println("json1rawMaterialInward" + json1);
+
+		String json = "";
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		try {
+			RawMaterialInwardBean rawMaterialInwardBean = objectMapper.readValue(json1, RawMaterialInwardBean.class);		
+			// Check for duplicate Tag ID
+			RawMaterialInwardModel existingMaterial = rawMaterialInwardService
+					.getRawMaterialInward(rawMaterialInwardBean.getTagID());
+			if (existingMaterial != null) {
+				// Duplicate Tag ID case
+				rawMaterialInwardBean.setMessage("Tag ID already registered");
+				rawMaterialInwardBean.setSuccessFlag(false);
+			} else {
+			
+				ItemLocationBean locationModel=new ItemLocationBean();
+				locationModel.setItemLocationId(rawMaterialInwardBean.getParentLocationId());
+				rawMaterialInwardBean.setBinLocation(locationModel);
+					AssetCategoryModel assetCategory = new AssetCategoryModel();
+					assetCategory.setAssetCategoryId(rawMaterialInwardBean.getAssetCategoryId());				
+					RawMaterialInwardModel rawMaterialModel = RawMaterialInwardBean.prepareModel(rawMaterialInwardBean);
+					rawMaterialModel.setAssetCategory(assetCategory); 
+					rawMaterialInwardService.addRawMaterialInward(rawMaterialModel);
+					rawMaterialInwardBean.setMessage("Data saved successfully!");
+					rawMaterialInwardBean.setSuccessFlag(true);
+				}
+
+			json = objectMapper.writeValueAsString(rawMaterialInwardBean);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+
+			// Handle errors and return a meaningful response
+			RawMaterialInwardBean errorResponse = new RawMaterialInwardBean();
+			errorResponse.setMessage("An error occurred while processing the request.");
+			errorResponse.setSuccessFlag(false);
+
+			// Prepare error response JSON
+			try {
+				json = objectMapper.writeValueAsString(errorResponse);
+			} catch (Exception jsonException) {
+				jsonException.printStackTrace();
+				json = "{\"message\": \"An error occurred while processing the error response\", \"successFlag\": false}";
+			}
+		}
+
+		System.out.println("Response JSON: " + json);
+		return json;
+	}
+	
+	@RequestMapping(value = "/rawMaterialDeRegister", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String rawMaterialDeRegister(HttpEntity<String> httpEntity) {
+
+		String json1 = httpEntity.getBody();
+		System.out.println("json1/rawMaterialDeRegister" + json1);
+				
+		String json = "";
+		
+		json = "{\r\n" + 
+	              "\"message\":\"Success!\",\r\n" + 
+	              "\"operation\":\"DeRegister\"\r\n" + 
+	              "}";
+
+		
+		System.out.println("json" + json);		
+		return json;
+	}
+	
+		
+	
+
+	@RequestMapping(value = "/syncLocation", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String syncLocation(HttpEntity<String> httpEntity) {
+		System.out.println("syncLocation");
+		String jsonResponse = "";
+		String requestBody = httpEntity.getBody();
+		JSONObject requestJson = null;
+		JSONParser parser = new JSONParser();
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		try {
+			System.out.println("Request Body: " + requestBody);
+			requestJson = (JSONObject) parser.parse(requestBody);
+
+//			String createdOnUtc = (String) requestJson.get("createdOnUtc");
+//	            RawMaterialInwardBean rawMaterialInwardBean = new RawMaterialInwardBean();
+//	            if (createdOnUtc != null && !createdOnUtc.isEmpty()) {
+//	                rawMaterialInwardBean.setFromDate(new Date(Long.parseLong(createdOnUtc)));
+//	            }
+
+			MaterailBeanList materialBeanList = new MaterailBeanList();
+
+			materialBeanList
+					.setLocationBeanList(ItemLocationBean.prepareListBean(itemLocationService.getListItemLocation(0)));
+
+			jsonResponse = objectMapper.writeValueAsString(materialBeanList);
+
+			System.out.println("jsonResponse" + jsonResponse);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return jsonResponse;
+	}
+
+}

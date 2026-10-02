@@ -1,0 +1,225 @@
+package com.ecartes.controller;
+
+import java.util.Date;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+
+import com.ecartes.bean.LoginBean;
+import com.ecartes.bean.RoleMenuBean;
+import com.ecartes.bean.RoleTypeBean;
+import com.ecartes.service.RoleMenuService;
+import com.ecartes.service.RoleTypeService;
+import com.ecartes.validator.RoleMenuValidator;
+
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+@Controller
+public class RoleMenuController {
+	@Autowired
+	RoleMenuService roleMenuService;
+	@Autowired
+	RoleTypeService roleTypeService;
+	@Autowired
+	RoleMenuValidator roleMenuValidator;
+	
+	private List<RoleMenuBean> roleMenuBeanList = null;
+	
+	@ModelAttribute
+	public void addingCommonObject(Model model, HttpServletRequest request) {
+		roleMenuBeanList = RoleMenuBean.prepareListBean(roleMenuService.getListRoleMenuType(0));
+		model.addAttribute("menuTypes", roleMenuBeanList);
+		model.addAttribute("menuRoles", RoleTypeBean.prepareListBean(roleTypeService.getListRoleType()));
+	}
+
+	@InitBinder
+	public void InitBinder(WebDataBinder binder) {
+		binder.addValidators(roleMenuValidator);
+	}
+
+	@RequestMapping(value = "/addRoleMenuType", method = RequestMethod.GET)
+	public ModelAndView addRoleMenuType(@ModelAttribute("command") RoleMenuBean roleMenuBean, BindingResult result,
+			HttpServletRequest request) {
+		ModelAndView modelAndView = new ModelAndView("pages/roleMenu/addMenuType");
+		roleMenuBean.setActive(true);
+		modelAndView.addObject("roleMenuBean", roleMenuBean);
+		return modelAndView;
+	}
+	
+	@RequestMapping(value = "/saveRoleMenuType", method = RequestMethod.POST)
+	public ModelAndView saveRoleMenuType(@ModelAttribute("command") @Validated RoleMenuBean roleMenuBean, BindingResult result,
+			HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/roleMenu/addMenuType");
+			return modelAndView;
+		} else {
+			LoginBean loginUser = (LoginBean) request.getSession().getAttribute("LOGGEDIN_USER");
+			modelAndView = new ModelAndView("pages/roleMenu/displayMenuType");
+			
+			roleMenuBean.setCreatedOn(new Date());
+			roleMenuBean.setModifyOn(new Date());
+			roleMenuBean.setCreatedBy(loginUser.getLoginId());
+			roleMenuBean.setModifyBy(loginUser.getLoginId());
+			roleMenuService.addRoleMenu(RoleMenuBean.prepareModel(roleMenuBean));
+			modelAndView.addObject("menuTypes", RoleMenuBean.prepareListBean(roleMenuService.getListRoleMenuType(0)));
+			modelAndView.addObject("roleMenuBean", roleMenuBean);
+			return modelAndView;
+		}
+
+	}
+	
+	@RequestMapping(value = "/displayRoleMenuType", method = RequestMethod.GET)
+	public ModelAndView displayRoleMenuType(@ModelAttribute("command") RoleMenuBean roleMenuBean, BindingResult result,
+			HttpServletRequest request) {
+		ModelAndView modelAndView = new ModelAndView("pages/roleMenu/displayMenuType");
+		roleMenuBean.setActive(true);
+		modelAndView.addObject("roleMenuBean", roleMenuBean);
+		return modelAndView;
+	}
+	
+	@RequestMapping(value = "/editRoleMenuType", method = RequestMethod.GET)
+	public ModelAndView editRoleMenuType(@ModelAttribute("command") RoleMenuBean roleMenuBean, BindingResult result,
+			HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/roleMenu/addMenuType");
+			return modelAndView;
+		} else {
+			modelAndView = new ModelAndView("pages/roleMenu/addMenuType");
+			modelAndView.addObject("roleMenuBean",
+					RoleMenuBean.prepareBean(roleMenuService.getRoleMenu(roleMenuBean.getMenuID())));
+			return modelAndView;
+		}
+
+	}
+
+	//*********************************************************************************************
+
+	@RequestMapping(value = "/addRoleMenu", method = RequestMethod.GET)
+	public ModelAndView addRoleMenu(@ModelAttribute("command") RoleMenuBean roleMenuBean, BindingResult result,
+			HttpServletRequest request) {
+		ModelAndView modelAndView = new ModelAndView("pages/roleMenu/addroleMenu");
+
+		modelAndView.addObject("roleMenuBean", roleMenuBean);
+		return modelAndView;
+	}
+
+	@RequestMapping(value = "/addRoleMenu", method = RequestMethod.POST)
+	public ModelAndView addRoleMenuGetListByRole(@ModelAttribute("command") RoleMenuBean roleMenuBean,
+			BindingResult result, HttpServletRequest request) {
+		ModelAndView modelAndView = new ModelAndView("pages/roleMenu/addroleMenu");
+		List<RoleMenuBean> list = RoleMenuBean
+				.prepareListBean(roleMenuService.getMenuByUserRole(roleMenuBean.getRoleId()));
+		if (list != null && list.size() > 0) {
+			for (int i = 0; roleMenuBeanList != null && i < roleMenuBeanList.size(); i++) {
+				int menuid = roleMenuBeanList.get(i).getMenuID();
+				for (int j = 0; j < list.size(); j++) {
+					int parentMenuId = list.get(j).getMenuParent().getMenuID();
+					if (menuid == parentMenuId) {
+						roleMenuBeanList.get(i).setInsertRecord(list.get(j).getInsertRecord());
+						roleMenuBeanList.get(i).setDisableRecord(list.get(j).getDisableRecord());
+						roleMenuBeanList.get(i).setDisplayRecord(list.get(j).getDisplayRecord());
+						roleMenuBeanList.get(i).setUpdateRecord(list.get(j).getUpdateRecord());
+						break;
+					}
+				}
+
+			}
+		}
+		modelAndView.addObject("menuTypes", roleMenuBeanList);
+		modelAndView.addObject("roleMenuBean", roleMenuBean);
+		return modelAndView;
+	}
+
+	@RequestMapping(value = "/saveRoleMenu", method = RequestMethod.POST)
+	public ModelAndView saveRoleMenu(@ModelAttribute("command") RoleMenuBean roleMenuBean, BindingResult result,
+			HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/roleMenu/addroleMenu");
+			return modelAndView;
+		} else {
+			LoginBean loginUser = (LoginBean) request.getSession().getAttribute("LOGGEDIN_USER");
+			modelAndView = new ModelAndView("pages/roleMenu/addroleMenu");
+			roleMenuBean.setCreatedOn(new java.util.Date());
+			roleMenuBean.setModifyOn(new java.util.Date());
+			roleMenuBean.setCreatedBy(loginUser.getCreatedBy());
+			roleMenuBean.setModifyBy(loginUser.getModifyBy());
+
+			if (roleMenuBean.getInsertList() != null && roleMenuBean.getInsertList().size() > 0) {
+				roleMenuService.deleteRoleMenuByRoleID(roleMenuBean.getRoleId());
+
+				for (int i = 0; i < roleMenuBean.getInsertList().size(); i++) {
+
+					RoleMenuBean menuBean = new RoleMenuBean();
+					menuBean.setRoleId(roleMenuBean.getRoleId());
+					menuBean.setCreatedOn(new java.util.Date());
+					menuBean.setModifyOn(new java.util.Date());
+					menuBean.setCreatedBy(loginUser.getCreatedBy());
+					menuBean.setModifyBy(loginUser.getModifyBy());
+
+					menuBean.setActive(roleMenuBean.getInsertList().get(i).getActive());
+
+					menuBean.setMenuParent(roleMenuBean.getInsertList().get(i));
+					menuBean.setInsertRecord(roleMenuBean.getInsertList().get(i).getInsertRecord());
+					menuBean.setUpdateRecord(roleMenuBean.getInsertList().get(i).getUpdateRecord());
+					menuBean.setDisableRecord(roleMenuBean.getInsertList().get(i).getDisableRecord());
+					menuBean.setDisplayRecord(roleMenuBean.getInsertList().get(i).getDisplayRecord());
+
+					roleMenuService.addRoleMenu(RoleMenuBean.prepareModel(menuBean));
+				}
+			}
+
+			List<RoleMenuBean> list = RoleMenuBean
+					.prepareListBean(roleMenuService.getMenuByUserRole(roleMenuBean.getRoleId()));
+			if (list != null && list.size() > 0) {
+				for (int i = 0; roleMenuBeanList != null && i < roleMenuBeanList.size(); i++) {
+					int menuid = roleMenuBeanList.get(i).getMenuID();
+					for (int j = 0; j < list.size(); j++) {
+						int parentMenuId = list.get(j).getMenuParent().getMenuID();
+						if (menuid == parentMenuId) {
+							roleMenuBeanList.get(i).setInsertRecord(list.get(j).getInsertRecord());
+							roleMenuBeanList.get(i).setDisableRecord(list.get(j).getDisableRecord());
+							roleMenuBeanList.get(i).setDisplayRecord(list.get(j).getDisplayRecord());
+							roleMenuBeanList.get(i).setUpdateRecord(list.get(j).getUpdateRecord());
+							break;
+						}
+					}
+
+				}
+			}
+			modelAndView.addObject("menuTypes", roleMenuBeanList);
+			modelAndView.addObject("roleMenuBean", roleMenuBean);
+			return modelAndView;
+		}
+
+	}
+
+	@RequestMapping(value = "/editRoleMenu", method = RequestMethod.GET)
+	public ModelAndView editRoleMenu(@ModelAttribute("command") RoleMenuBean roleMenuBean, BindingResult result,
+			HttpServletRequest request) {
+		ModelAndView modelAndView = null;
+		if (result.hasErrors()) {
+			modelAndView = new ModelAndView("pages/roleMenu/addroleMenu");
+			return modelAndView;
+		} else {
+			modelAndView = new ModelAndView("pages/roleMenu/addroleMenu");
+			modelAndView.addObject("roleMenuBean",
+					RoleMenuBean.prepareBean(roleMenuService.getRoleMenu(roleMenuBean.getMenuID())));
+			return modelAndView;
+		}
+	}
+	
+}

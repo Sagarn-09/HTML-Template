@@ -1,0 +1,57 @@
+package com.ecartes.bean;
+
+import java.util.List;
+
+public class WSDataCommunication<T> {
+
+	public List<T> getList() {
+		return list;
+	}
+
+	public void setList(List<T> list) {
+		this.list = list;
+	}
+
+	private List<T> list = null;
+
+	private Boolean successFlag = null;
+
+	public Boolean getSuccessFlag() {
+		return successFlag;
+	}
+
+	public void setSuccessFlag(Boolean successFlag) {
+		this.successFlag = successFlag;
+	}
+
+	private String message = null;
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	private String callingPage = null;
+
+	public String getCallingPage() {
+		return callingPage;
+	}
+
+	public void setCallingPage(String callingPage) {
+		this.callingPage = callingPage;
+	}
+
+	private String operation = null;
+
+	public String getOperation() {
+		return operation;
+	}
+
+	public void setOperation(String operation) {
+		this.operation = operation;
+	}
+
+}

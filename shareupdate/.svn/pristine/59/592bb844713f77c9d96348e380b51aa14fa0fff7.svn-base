@@ -1,0 +1,127 @@
+package com.ecartes.common;
+
+import java.io.InputStream;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+public class Common {
+	
+	
+	
+    public static XSSFSheet sheet = null;
+    public static XSSFWorkbook workbook = null;
+//    public static FileInputStream inputStream = null;
+    public static InputStream inputStream = null;
+    public static FormulaEvaluator formulaEvaluator = null;
+    public static int rowsCount = 0;
+	
+	public static String UploadExcelFiles = null;
+	public static String DownloadExcelFiles = null;
+	public static String RfidFiles = null;
+	public static String insuranceAlertDays = null;
+	public static String PdfFiles = null;
+	public static String toEmail = null;
+	public static String ExcelFiles = null;
+	public static String CSVFiles = null;
+	public static String readerUrl = "http://localhost:9090/USBReader";
+	public static final String AMC_UPLOAD_DIRECTORY = "File_Uploads";
+	public static final String Insurance_UPLOAD_DIRECTORY = "File_Uploads";
+	public static final String Procument_upload_directory = "File_Uploads";
+	public static final String File_UPLOAD_DIRECTORY = "File_Uploads";
+	public static final String Maintenance_UPLOAD_DIRECTORY = "File_Uploads";
+	public static String DownloadExcelFilesEpc = null;
+
+	public static String getDateString(Date date) {
+		SimpleDateFormat utc = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss SSS");
+		return utc.format(date);
+	}
+
+	static {
+		try {
+			Context env = null;
+			env = (Context) new InitialContext().lookup("java:comp/env");
+			Common.RfidFiles = (String) env.lookup("RfidUpload");
+			Common.PdfFiles = (String) env.lookup("PdfFiles");
+			Common.toEmail = (String) env.lookup("toEmail");
+			Common.ExcelFiles = (String) env.lookup("ExcelFiles");
+			Common.CSVFiles = (String) env.lookup("CSVFiles");
+			Common.insuranceAlertDays = (String) env.lookup("insuranceAlertDays");
+			Common.readerUrl = (String) env.lookup("ReaderUrL");
+			Common.UploadExcelFiles = (String) env.lookup("UploadExcelFiles");
+			Common.DownloadExcelFiles = (String) env.lookup("DownloadExcelFiles");
+			Common.DownloadExcelFilesEpc = (String) env.lookup("DownloadExcelFilesEpc");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public static String getUtcFormat(Date date) {
+		SimpleDateFormat utc = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+		String dateUtc = utc.format(date);
+		if (dateUtc != null && dateUtc.length() < 15) {
+			dateUtc = dateUtc + "000";
+		} else if (dateUtc != null && dateUtc.length() < 16) {
+			dateUtc = dateUtc + "00";
+		} else if (dateUtc != null && dateUtc.length() < 17) {
+			dateUtc = dateUtc + "0";
+		}
+		return "DT" + dateUtc;
+	}
+
+	public static Date getEndDate(Date date) {
+		if (date == null) {
+			return null;
+		}
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.set(Calendar.HOUR_OF_DAY, 23);
+		cal.set(Calendar.MINUTE, 59);
+		cal.set(Calendar.SECOND, 58);
+		cal.set(Calendar.MILLISECOND, 999);
+
+		return cal.getTime();
+	}
+
+	public static Date getDateFromUtcFormat(String dateUtcFormat) {
+		SimpleDateFormat utc = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+		Date date = null;
+		try {
+			if (dateUtcFormat != null)
+				date = utc.parse(dateUtcFormat.replaceAll("DT", ""));
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return date;
+	}
+
+	public static String getMD5(String pass) {
+		String hashtext = "";
+		try {
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			byte[] messageDigest = md.digest(pass.getBytes());
+			BigInteger no = new BigInteger(1, messageDigest);
+			hashtext = no.toString(16);
+			while (hashtext.length() < 32) {
+				hashtext = "0" + hashtext;
+			}
+			return hashtext;
+		} catch (NoSuchAlgorithmException e) {
+
+			e.printStackTrace();
+		}
+		return null;
+	}
+}

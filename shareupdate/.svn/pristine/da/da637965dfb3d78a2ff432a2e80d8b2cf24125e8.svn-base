@@ -1,0 +1,262 @@
+package com.ecartes.bean;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
+
+import java.util.ArrayList;
+
+import com.ecartes.model.ItemLocationModel;
+
+public class ItemLocationBean implements Serializable {
+	private static final long serialVersionUID = -723583058586873479L;
+	private Integer itemLocationId = null;
+
+	public Integer getItemLocationId() {
+		return itemLocationId;
+	}
+
+	public void setItemLocationId(Integer itemLocationId) {
+		this.itemLocationId = itemLocationId;
+	}
+
+	private String itemLocationName = null;
+
+	public String getItemLocationName() {
+		return itemLocationName;
+	}
+
+	public void setItemLocationName(String itemLocationName) {
+		this.itemLocationName = itemLocationName;
+	}
+
+	private ItemLocationBean itemLocationParent = null;
+
+	public ItemLocationBean getItemLocationParent() {
+		return itemLocationParent;
+	}
+
+	public void setItemLocationParent(ItemLocationBean itemLocationParent) {
+		this.itemLocationParent = itemLocationParent;
+	}
+
+	private String itemLocationEpcId = null;
+
+	public String getItemLocationEpcId() {
+		return itemLocationEpcId;
+	}
+
+	public void setItemLocationEpcId(String itemLocationEpcId) {
+		this.itemLocationEpcId = itemLocationEpcId;
+	}
+
+	private Integer createdBy = 0;
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	private Date createdOn = null;
+
+	public Date getCreatedOn() {
+		return createdOn;
+	}
+
+	public void setCreatedOn(Date createdOn) {
+		this.createdOn = createdOn;
+	}
+
+	private Integer modifyBy = 0;
+
+	public Integer getModifyBy() {
+		return modifyBy;
+	}
+
+	public void setModifyBy(Integer modifyBy) {
+		this.modifyBy = modifyBy;
+	}
+
+	private Date modifyOn = null;
+
+	public Date getModifyOn() {
+		return modifyOn;
+	}
+
+	public void setModifyOn(Date modifyOn) {
+		this.modifyOn = modifyOn;
+	}
+
+	private Boolean active = false;
+
+	public Boolean getActive() {
+		return active;
+	}
+
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+
+	private Boolean successFlag = null;
+
+	public Boolean getSuccessFlag() {
+		return successFlag;
+	}
+
+	public void setSuccessFlag(Boolean successFlag) {
+		this.successFlag = successFlag;
+	}
+
+	private String message = null;
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	private String callingPage = null;
+
+	public String getCallingPage() {
+		return callingPage;
+	}
+
+	public void setCallingPage(String callingPage) {
+		this.callingPage = callingPage;
+	}
+
+	private String operation = null;
+
+	public String getOperation() {
+		return operation;
+	}
+
+	public void setOperation(String operation) {
+		this.operation = operation;
+	}
+
+	private CommonsMultipartFile pdfPath = null;
+
+	public CommonsMultipartFile getPdfPath() {
+		return pdfPath;
+	}
+
+	public void setPdfPath(CommonsMultipartFile pdfPath) {
+		this.pdfPath = pdfPath;
+	}
+
+	private String pdfPathUrl = null;
+
+	public String getPdfPathUrl() {
+		return pdfPathUrl;
+	}
+
+	public void setPdfPathUrl(String pdfPathUrl) {
+		this.pdfPathUrl = pdfPathUrl;
+	}
+
+	private CommonsMultipartFile imagePath = null;
+
+	public CommonsMultipartFile getImagePath() {
+		return imagePath;
+	}
+
+	public void setImagePath(CommonsMultipartFile imagePath) {
+		this.imagePath = imagePath;
+	}
+
+	private String imagePathUrl = null;
+
+	public String getImagePathUrl() {
+		return imagePathUrl;
+	}
+
+	public void setImagePathUrl(String imagePathUrl) {
+		this.imagePathUrl = imagePathUrl;
+	}
+
+	private String floorName;
+
+	public String getFloorName() {
+		return floorName;
+	}
+
+	public void setFloorName(String floorName) {
+		this.floorName = floorName;
+	}
+
+	public static ItemLocationModel prepareModel(ItemLocationBean bean) {
+		ItemLocationModel model = new ItemLocationModel();
+		model.setItemLocationId(bean.getItemLocationId());
+		model.setItemLocationName(bean.getItemLocationName());
+		if (bean.getItemLocationParent() != null && bean.getItemLocationParent().getItemLocationId() > 0) {
+			model.setItemLocationParent(ItemLocationBean.prepareModel(bean.getItemLocationParent()));
+		}
+		model.setItemLocationEpcId(bean.getItemLocationEpcId());
+		model.setCreatedBy(bean.getCreatedBy());
+		model.setCreatedOn(bean.getCreatedOn());
+		model.setModifyBy(bean.getModifyBy());
+		model.setModifyOn(bean.getModifyOn());
+		model.setActive(bean.getActive());
+
+		model.setFloorName(bean.getFloorName());
+
+		// model.setImagePathUrl(bean.getImagePathUrl());
+		// model.setPdfPathUrl(bean.getPdfPathUrl());
+		return model;
+	}
+
+	public static ItemLocationBean prepareBean(ItemLocationModel model) {
+		if (model == null) {
+			return null;
+		}
+		ItemLocationBean bean = new ItemLocationBean();
+		bean.setItemLocationId(model.getItemLocationId());
+		bean.setItemLocationName(model.getItemLocationName());
+
+		if (model.getItemLocationParent() != null && model.getItemLocationParent().getItemLocationId() != null
+				&& model.getItemLocationParent().getItemLocationId() > 0) {
+			bean.setItemLocationParent(ItemLocationBean.prepareBean(model.getItemLocationParent()));
+		}
+		bean.setItemLocationEpcId(model.getItemLocationEpcId());
+		bean.setCreatedBy(model.getCreatedBy());
+		bean.setCreatedOn(model.getCreatedOn());
+		bean.setModifyBy(model.getModifyBy());
+		bean.setModifyOn(model.getModifyOn());
+		bean.setActive(model.getActive());
+
+		bean.setFloorName(model.getFloorName());
+		// bean.setImagePathUrl(model.getImagePathUrl());
+		// bean.setPdfPathUrl(model.getPdfPathUrl());
+		return bean;
+	}
+
+	public static List<ItemLocationBean> prepareListBean(List<ItemLocationModel> listModel) {
+		List<ItemLocationBean> beans = null;
+		if (listModel != null && !listModel.isEmpty()) {
+			beans = new ArrayList<ItemLocationBean>();
+			for (ItemLocationModel model : listModel) {
+				beans.add(prepareBean(model));
+			}
+		}
+		return beans;
+	}
+
+	public static List<ItemLocationModel> prepareListModel(List<ItemLocationBean> beans) {
+		List<ItemLocationModel> listModel = null;
+		if (beans != null && !beans.isEmpty()) {
+			listModel = new ArrayList<ItemLocationModel>();
+			for (ItemLocationBean bean : beans) {
+				listModel.add(prepareModel(bean));
+			}
+		}
+		return listModel;
+	}
+}

@@ -1,0 +1,92 @@
+package com.ecartes.dao;
+
+import java.util.List;
+
+import org.hibernate.Criteria;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.transform.Transformers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import com.ecartes.model.LoginModel;
+
+@Repository("loginDAO")
+public class LoginDAOImpl implements LoginDAO {
+	@Autowired
+	private SessionFactory sessionFactory;
+
+	@Override
+	public void addLogin(LoginModel login) {
+		sessionFactory.getCurrentSession().saveOrUpdate(login);
+	}
+
+	@Override
+	public List<LoginModel> getListLogin(String userType) {
+		if (userType != null && userType.length() > 0) {
+			return (List<LoginModel>) sessionFactory.getCurrentSession().createCriteria(LoginModel.class)
+					.add(Restrictions.eq("userType", userType)).list();
+		} else {
+			return (List<LoginModel>) sessionFactory.getCurrentSession().createCriteria(LoginModel.class)
+					.add(Restrictions.isNull("userType")).list();
+		}
+	}
+
+	@Override
+	public LoginModel getLogin(Integer loginId) {
+		return (LoginModel) sessionFactory.getCurrentSession().get(LoginModel.class, loginId);
+	}
+
+	@Override
+	public void deleteLogin(Integer loginId) {
+		sessionFactory.getCurrentSession().createQuery("DELETE FROM login WHERE loginId=" + loginId).executeUpdate();
+	}
+
+	@Override
+	public List<LoginModel> userEmailList() {
+		Criteria cr = sessionFactory.getCurrentSession().createCriteria(LoginModel.class)
+				.setProjection(Projections.projectionList().add(Projections.property("loginId"), "loginId")
+						.add(Projections.property("userLoginId"), "userLoginId"))
+				.setResultTransformer(Transformers.aliasToBean(LoginModel.class));
+
+		List<LoginModel> list = cr.list();
+		return list;
+	}
+
+	@Override
+	public LoginModel getLogin(String userLoginId, String password) {
+		Session session = sessionFactory.getCurrentSession();
+		Criteria criteria = session.createCriteria(LoginModel.class);
+		criteria.add(Restrictions.eq("userLoginId", userLoginId));
+		criteria.add(Restrictions.eq("password", password));
+		criteria.add(Restrictions.eq("active", true));
+		List<LoginModel> list = (List<LoginModel>) criteria.list();
+		if (list.size() > 0) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	@Override
+	public LoginModel cheIdExitLogin(String userLoginId) {
+
+		Session session = sessionFactory.getCurrentSession();
+		Criteria criteria = session.createCriteria(LoginModel.class);
+		criteria.add(Restrictions.eq("userLoginId", userLoginId));
+		List<LoginModel> list = (List<LoginModel>) criteria.list();
+		if (list.size() > 0) {
+			return list.get(0);
+		}
+		return null;
+	}
+
+	@Override
+	public List<String> getEmailList() {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(LoginModel.class).setProjection(
+				Projections.distinct(Projections.projectionList().add(Projections.property("userLoginId"))));
+		return (List<String>) criteria.list();
+	}
+
+}

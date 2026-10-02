@@ -1,0 +1,142 @@
+package com.ecartes.service;
+
+import java.time.LocalDate;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.ecartes.model.ProcessTrackingFinalModel;
+import com.ecartes.model.RawMaterialInwardModel;
+import com.ecartes.model.RawMaterialInwardModelHistory;
+import com.ecartes.bean.BulkProcessHH;
+import com.ecartes.bean.ProcessTrackingFinalBean;
+import com.ecartes.bean.RawMaterialInwardBean;
+import com.ecartes.dao.RawMaterialInwardDAO;
+
+@Service("rawMaterialInwardService")
+@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+public class RawMaterialInwardServiceImpl implements RawMaterialInwardService {
+	@Autowired
+	private RawMaterialInwardDAO rawMaterialInwardDao;
+
+	@Transactional(propagation = Propagation.REQUIRED, readOnly = false)
+	public void addRawMaterialInward(RawMaterialInwardModel rawMaterialInward) {
+		rawMaterialInwardDao.addRawMaterialInward(rawMaterialInward);
+	}
+
+	public void addRawMaterialInwardHistory(RawMaterialInwardModelHistory rawMaterialInward) {
+		rawMaterialInwardDao.addRawMaterialInwardHistory(rawMaterialInward);
+	}
+
+	public void updateMaterial(RawMaterialInwardModel rawMaterialInward) {
+		rawMaterialInwardDao.updateMaterial(rawMaterialInward);
+	}
+
+	@Override
+	public List<RawMaterialInwardModel> getListRawMaterialInward(RawMaterialInwardBean rawMaterialInwardBean) {
+
+		return rawMaterialInwardDao.getListRawMaterialInward(rawMaterialInwardBean);
+	}
+
+	@Override
+	public RawMaterialInwardModel getRawMaterialInward(Integer rawMaterialInwardID) {
+		return rawMaterialInwardDao.getRawMaterialInward(rawMaterialInwardID);
+	}
+
+	@Override
+	public void deleteRawMaterialInward(Integer rawMaterialInwardID) {
+		rawMaterialInwardDao.deleteRawMaterialInward(rawMaterialInwardID);
+	}
+
+	public RawMaterialInwardModel getRawMaterialInward(String tagID) {
+		return rawMaterialInwardDao.getRawMaterialInward(tagID);
+	}
+
+	public void postData(BulkProcessHH bulkProcessHH) {
+		rawMaterialInwardDao.postData(bulkProcessHH);
+	}
+
+	public List<ProcessTrackingFinalModel> getListProcessTrackingFinal(
+			ProcessTrackingFinalBean processTrackingFinalBean) {
+		return rawMaterialInwardDao.getListProcessTrackingFinal(processTrackingFinalBean);
+	}
+
+	public List<RawMaterialInwardModel> getListRawMaterialInwardActiveIncremental(
+			RawMaterialInwardBean rawMaterialInwardBean) {
+		return rawMaterialInwardDao.getListRawMaterialInwardActiveIncremental(rawMaterialInwardBean);
+	}
+
+	public RawMaterialInwardModel getRawMaterialInwardByMaterialCode(String materialCodeNo) {
+		return rawMaterialInwardDao.getRawMaterialInwardByMaterialCode(materialCodeNo);
+	}
+
+	public Long getCount(RawMaterialInwardBean rawMaterialInwardBean) {
+		return rawMaterialInwardDao.getCount(rawMaterialInwardBean);
+	}
+
+	public List<RawMaterialInwardModel> getListRawMaterialInwardByFilter(RawMaterialInwardBean rawMaterialInwardBean) {
+		return rawMaterialInwardDao.getListRawMaterialInwardByFilter(rawMaterialInwardBean);
+	}
+
+	public List<RawMaterialInwardModel> getListInventoryNotFound(int trackingSessionId) {
+		return rawMaterialInwardDao.getListInventoryNotFound(trackingSessionId);
+	}
+
+	public List<RawMaterialInwardModel> getListRawMaterialWarantyExpired(RawMaterialInwardBean rawMaterialInwardBean) {
+		return rawMaterialInwardDao.getListRawMaterialWarantyExpired(rawMaterialInwardBean);
+	}
+
+	public List<RawMaterialInwardModel> getListRawMaterialInwardByFilterAll(
+			RawMaterialInwardBean rawMaterialInwardBean) {
+		return rawMaterialInwardDao.getListRawMaterialInwardByFilterAll(rawMaterialInwardBean);
+	}
+
+	public List<RawMaterialInwardModel> getListRawMaterialInwardByFilterAllNotTag(
+			RawMaterialInwardBean rawMaterialInwardBean) {
+		return rawMaterialInwardDao.getListRawMaterialInwardByFilterAllNotTag(rawMaterialInwardBean);
+	}
+
+	public List<RawMaterialInwardModel> getListRawMaterialInwardByFilterAllTag(
+			RawMaterialInwardBean rawMaterialInwardBean) {
+		return rawMaterialInwardDao.getListRawMaterialInwardByFilterAllTag(rawMaterialInwardBean);
+	}
+
+	public List<RawMaterialInwardModel> getListRawMaterialInwardByFilterAllTagScrap(
+			RawMaterialInwardBean rawMaterialInwardBean) {
+		return rawMaterialInwardDao.getListRawMaterialInwardByFilterAllTagScrap(rawMaterialInwardBean);
+	}
+
+	public int getListMaterial(String type) {
+		return rawMaterialInwardDao.getListMaterial(type);
+	}
+	
+	public int getListMaterial(String type , Integer locationId) {
+		return rawMaterialInwardDao.getListMaterial(type, locationId);
+	}
+
+	public List<RawMaterialInwardModel> getListRawMaterialInwardByFilterAllTagHistory(
+			RawMaterialInwardBean rawMaterialInwardBean) {
+		return rawMaterialInwardDao.getListRawMaterialInwardByFilterAllTagHistory(rawMaterialInwardBean);
+	}
+
+	public List<ProcessTrackingFinalModel> getListTrackingByAssetID(ProcessTrackingFinalBean processTrackingFinalBean) {
+		return rawMaterialInwardDao.getListTrackingByAssetID(processTrackingFinalBean);
+	}
+	
+	@Override
+    public List<RawMaterialInwardModel> getListMaterialSeriveExpired(RawMaterialInwardBean rawMaterialInwardBean) {
+        return rawMaterialInwardDao.getListMaterialSeriveExpired(rawMaterialInwardBean);
+    }
+
+    @Override
+    public List<RawMaterialInwardModel> getListMaterialSeriveUpcoming(RawMaterialInwardBean rawMaterialInwardBean) {
+        return rawMaterialInwardDao.getListMaterialSeriveUpcoming(rawMaterialInwardBean);
+    }
+
+	@Override
+	public RawMaterialInwardModel getLastRawMaterialInward() {
+		return rawMaterialInwardDao.getLastRawMaterialInward();
+	}
+}
